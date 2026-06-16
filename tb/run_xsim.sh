@@ -12,10 +12,16 @@ run_sim() {
   shift
 
   local snapshot="${top}_standalone"
+  local status=0
 
   xvlog -sv "$@"
   xelab "$top" -s "$snapshot" -a
-  "xsim.dir/${snapshot}/axsim"
+  "xsim.dir/${snapshot}/axsim" || status=$?
+
+  rm -f xvlog.log xvlog.pb xelab.log xelab.pb xsim.log xsim.jou
+  find xsim.dir -name "*.log" -delete 2>/dev/null || true
+
+  return "$status"
 }
 
 run_sim tb_pe_os hdl/pe_os.sv tb/tb_pe_os.sv
