@@ -23,6 +23,9 @@ run_sim tb_systolic_array_os_non_skew hdl/pe_os.sv hdl/systolic_array_os_non_ske
 run_sim tb_systolic_array_os hdl/pipeline_reg.sv hdl/pe_os.sv hdl/systolic_array_os.sv tb/tb_systolic_array_os.sv
 run_sim tb_gemm_fsm_os hdl/systolic_array_fsm_os.sv tb/tb_gemm_fsm_os.sv
 run_sim tb_gemm_fsm_ws hdl/accumulator.sv hdl/systolic_array_fsm_ws.sv tb/tb_gemm_fsm_ws.sv
+run_sim tb_axis_to_bram_writer hdl/axis_to_bram_writer.sv tb/tb_axis_to_bram_writer.sv
+run_sim tb_bram_to_axis_reader hdl/bram_to_axis_reader.sv tb/tb_bram_to_axis_reader.sv
+run_sim tb_axi4lite_slave_lite hdl/axi4lite_slave_lite_v1_0_S00_AXI.sv tb/tb_axi4lite_slave_lite.sv
 run_sim tb_systolic_array_engine_os hdl/bram_loader.sv hdl/bram_storer.sv hdl/pipeline_reg.sv hdl/pe_os.sv hdl/systolic_array_os.sv hdl/systolic_array_fsm_os.sv hdl/systolic_array_engine_os.sv tb/tb_systolic_array_engine_os.sv
 run_sim tb_systolic_array_engine_ws hdl/bram_loader.sv hdl/bram_storer.sv hdl/pipeline_reg.sv hdl/pe_ws.sv hdl/systolic_array_ws.sv hdl/systolic_array_fsm_ws.sv hdl/accumulator.sv hdl/systolic_array_engine_ws.sv tb/tb_systolic_array_engine_ws.sv
 run_sim tb_pe_ws_weight_valid hdl/pe_ws.sv tb/tb_pe_ws_weight_valid.sv
