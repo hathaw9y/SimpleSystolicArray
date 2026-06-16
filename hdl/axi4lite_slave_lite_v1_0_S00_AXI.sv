@@ -8,6 +8,7 @@ module axi4lite_slave_lite_v1_0_S00_AXI #(
     output logic [C_S_AXI_DATA_WIDTH-1:0] n_size_o,
     output logic [C_S_AXI_DATA_WIDTH-1:0] k_size_o,
     output logic                          start_o,
+    output logic                          clear_o,
     input  logic                          done_i,
     input  logic                          busy_i,
 
@@ -123,9 +124,11 @@ module axi4lite_slave_lite_v1_0_S00_AXI #(
       n_size_r       <= '0;
       k_size_r       <= '0;
       start_o        <= 1'b0;
+      clear_o        <= 1'b0;
       done_r         <= 1'b0;
     end else begin
       start_o <= 1'b0;
+      clear_o <= 1'b0;
 
       if (done_i) begin
         done_r <= 1'b1;
@@ -152,7 +155,8 @@ module axi4lite_slave_lite_v1_0_S00_AXI #(
               end
 
               if (wdata_r[1]) begin
-                done_r <= 1'b0;
+                clear_o <= 1'b1;
+                done_r  <= 1'b0;
               end
             end
           end

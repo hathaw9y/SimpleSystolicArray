@@ -28,9 +28,11 @@ module tb_axi4lite_slave_lite;
   logic [DATA_W-1:0] n_size_o;
   logic [DATA_W-1:0] k_size_o;
   logic              start_o;
+  logic              clear_o;
   logic              done_i;
   logic              busy_i;
   int                start_count;
+  int                clear_count;
 
   axi4lite_slave_lite_v1_0_S00_AXI #(
       .C_S_AXI_DATA_WIDTH(DATA_W),
@@ -40,6 +42,7 @@ module tb_axi4lite_slave_lite;
       .n_size_o(n_size_o),
       .k_size_o(k_size_o),
       .start_o(start_o),
+      .clear_o(clear_o),
       .done_i(done_i),
       .busy_i(busy_i),
       .S_AXI_ACLK(S_AXI_ACLK),
@@ -75,6 +78,14 @@ module tb_axi4lite_slave_lite;
       start_count <= 0;
     end else if (start_o) begin
       start_count <= start_count + 1;
+    end
+  end
+
+  always_ff @(posedge S_AXI_ACLK or negedge S_AXI_ARESETN) begin
+    if (!S_AXI_ARESETN) begin
+      clear_count <= 0;
+    end else if (clear_o) begin
+      clear_count <= clear_count + 1;
     end
   end
 
@@ -207,6 +218,7 @@ module tb_axi4lite_slave_lite;
   initial begin
     logic [DATA_W-1:0] rd_data;
     int                prev_start_count;
+    int                prev_clear_count;
 
     drive_idle();
     S_AXI_ARESETN = 1'b0;
@@ -216,6 +228,7 @@ module tb_axi4lite_slave_lite;
     check_word("reset n_size", n_size_o, 32'd0);
     check_word("reset k_size", k_size_o, 32'd0);
     check_bit("reset start", start_o, 1'b0);
+    check_bit("reset clear", clear_o, 1'b0);
 
     S_AXI_ARESETN = 1'b1;
     tick();
@@ -256,7 +269,13 @@ module tb_axi4lite_slave_lite;
     axi_read(4'h0, rd_data);
     check_word("done status", rd_data, 32'h1);
 
+    prev_clear_count = clear_count;
     axi_write(4'h0, 32'h2, 4'hf);
+    if (clear_count != prev_clear_count + 1) begin
+      $error("clear pulse count: got %0d, expected %0d", clear_count, prev_clear_count + 1);
+      $finish;
+    end
+    check_bit("clear pulse clears", clear_o, 1'b0);
     axi_read(4'h0, rd_data);
     check_word("done clear status", rd_data, 32'h0);
 

@@ -1,4 +1,4 @@
-module tb_systolic_array_top_os;
+module tb_systolic_array_top_ws;
   localparam int ROWS     = 2;
   localparam int COLS     = 2;
   localparam int ACT_W    = 8;
@@ -45,7 +45,7 @@ module tb_systolic_array_top_os;
   logic s_axis_weight_tready_o;
   logic s_axis_weight_tlast_i;
 
-  logic [ROWS*ACC_W-1:0] m_axis_result_tdata_o;
+  logic [COLS*ACC_W-1:0] m_axis_result_tdata_o;
   logic m_axis_result_tvalid_o;
   logic m_axis_result_tready_i;
   logic m_axis_result_tlast_o;
@@ -69,16 +69,16 @@ module tb_systolic_array_top_os;
   logic acc_wr_bram_en_o;
   logic acc_wr_bram_we_o;
   logic [ADDR_W-1:0] acc_wr_bram_addr_o;
-  logic [ROWS*ACC_W-1:0] acc_wr_bram_data_o;
+  logic [COLS*ACC_W-1:0] acc_wr_bram_data_o;
   logic acc_rd_bram_en_o;
   logic [ADDR_W-1:0] acc_rd_bram_addr_o;
-  logic [ROWS*ACC_W-1:0] acc_rd_bram_data_i;
+  logic [COLS*ACC_W-1:0] acc_rd_bram_data_i;
 
   logic [ROWS*ACT_W-1:0] act_mem[256];
   logic [COLS*WEIGHT_W-1:0] weight_mem[256];
-  logic [ROWS*ACC_W-1:0] acc_mem[256];
+  logic [COLS*ACC_W-1:0] acc_mem[256];
 
-  systolic_array_top_os #(
+  systolic_array_top_ws #(
       .ROWS            (ROWS),
       .COLS            (COLS),
       .ACT_W           (ACT_W),
@@ -169,7 +169,7 @@ module tb_systolic_array_top_os;
     end
   endfunction
 
-  function automatic logic [ROWS*ACC_W-1:0] pack_acc(input int signed lane0,
+  function automatic logic [COLS*ACC_W-1:0] pack_acc(input int signed lane0,
                                                      input int signed lane1);
     begin
       pack_acc = '0;
@@ -221,8 +221,8 @@ module tb_systolic_array_top_os;
     end
   endtask
 
-  task automatic check_acc_word(input string name, input logic [ROWS*ACC_W-1:0] got,
-                                input logic [ROWS*ACC_W-1:0] exp);
+  task automatic check_acc_word(input string name, input logic [COLS*ACC_W-1:0] got,
+                                input logic [COLS*ACC_W-1:0] exp);
     begin
       if (got !== exp) begin
         $error("%s: got 0x%016x, expected 0x%016x", name, got, exp);
@@ -391,11 +391,11 @@ module tb_systolic_array_top_os;
   endtask
 
   task automatic collect_result_stream;
-    logic [ROWS*ACC_W-1:0] expected[2];
+    logic [COLS*ACC_W-1:0] expected[2];
     bit seen;
     begin
-      expected[0] = pack_acc(19, 43);
-      expected[1] = pack_acc(22, 50);
+      expected[0] = pack_acc(19, 22);
+      expected[1] = pack_acc(43, 50);
       m_axis_result_tready_i = 1'b1;
 
       for (int beat = 0; beat < 2; beat++) begin
@@ -481,22 +481,22 @@ module tb_systolic_array_top_os;
     axi_write(4'hc, 32'd2, 4'hf);
     axi_write(4'h0, 32'h1, 4'hf);
 
-    send_act_beat(pack_act(1, 3), 1'b0);
-    send_act_beat(pack_act(2, 4), 1'b1);
+    send_act_beat(pack_act(1, 2), 1'b0);
+    send_act_beat(pack_act(3, 4), 1'b1);
 
     send_weight_beat(pack_weight(5, 6), 1'b0);
     send_weight_beat(pack_weight(7, 8), 1'b1);
 
     collect_result_stream();
     wait_done_via_axi();
-    check_acc_word("acc row 0", acc_mem[ACC_BASE_ADDR], pack_acc(19, 43));
-    check_acc_word("acc row 1", acc_mem[ACC_BASE_ADDR+ADDR_W'(1)], pack_acc(22, 50));
+    check_acc_word("acc row 0", acc_mem[ACC_BASE_ADDR], pack_acc(19, 22));
+    check_acc_word("acc row 1", acc_mem[ACC_BASE_ADDR+ADDR_W'(1)], pack_acc(43, 50));
 
     axi_read(4'h0, rd_data);
     check_word("done sticky status", rd_data, 32'h1);
     axi_write(4'h0, 32'h2, 4'hf);
 
-    $display("tb_systolic_array_top_os PASS");
+    $display("tb_systolic_array_top_ws PASS");
     $finish;
   end
 endmodule

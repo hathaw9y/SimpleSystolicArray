@@ -1,4 +1,4 @@
-module systolic_array_top_os #(
+module systolic_array_top_ws #(
     parameter int                ROWS             = 16,
     parameter int                COLS             = 16,
     parameter int                ACT_W            = 8,
@@ -43,7 +43,7 @@ module systolic_array_top_os #(
     output logic                     s_axis_weight_tready_o,
     input  logic                     s_axis_weight_tlast_i,
 
-    output logic [ROWS*ACC_W-1:0] m_axis_result_tdata_o,
+    output logic [COLS*ACC_W-1:0] m_axis_result_tdata_o,
     output logic                  m_axis_result_tvalid_o,
     input  logic                  m_axis_result_tready_i,
     output logic                  m_axis_result_tlast_o,
@@ -67,15 +67,15 @@ module systolic_array_top_os #(
     output logic                  acc_wr_bram_en_o,
     output logic                  acc_wr_bram_we_o,
     output logic [    ADDR_W-1:0] acc_wr_bram_addr_o,
-    output logic [ROWS*ACC_W-1:0] acc_wr_bram_data_o,
+    output logic [COLS*ACC_W-1:0] acc_wr_bram_data_o,
     output logic                  acc_rd_bram_en_o,
     output logic [    ADDR_W-1:0] acc_rd_bram_addr_o,
-    input  logic [ROWS*ACC_W-1:0] acc_rd_bram_data_i
+    input  logic [COLS*ACC_W-1:0] acc_rd_bram_data_i
 );
 
   localparam int ACT_BRAM_W = ROWS * ACT_W;
   localparam int WEIGHT_BRAM_W = COLS * WEIGHT_W;
-  localparam int ACC_BRAM_W = ROWS * ACC_W;
+  localparam int ACC_BRAM_W = COLS * ACC_W;
 
   logic [      31:0] ctrl_m_size_w;
   logic [      31:0] ctrl_n_size_w;
@@ -116,6 +116,13 @@ module systolic_array_top_os #(
   logic              result_store_busy_w;
   logic              result_store_done_w;
   logic              result_store_error_w;
+  logic              engine_acc_rd_bram_en_w;
+  logic [ADDR_W-1:0] engine_acc_rd_bram_addr_w;
+  logic              result_acc_rd_bram_en_w;
+  logic [ADDR_W-1:0] result_acc_rd_bram_addr_w;
+
+  assign acc_rd_bram_en_o = result_store_busy_w ? result_acc_rd_bram_en_w : engine_acc_rd_bram_en_w;
+  assign acc_rd_bram_addr_o = result_store_busy_w ? result_acc_rd_bram_addr_w : engine_acc_rd_bram_addr_w;
 
   axi4lite_slave_lite_v1_0_S00_AXI #(
       .C_S_AXI_DATA_WIDTH(32),
@@ -151,7 +158,7 @@ module systolic_array_top_os #(
       .S_AXI_RREADY (S_AXI_RREADY)
   );
 
-  systolic_array_controller_os #(
+  systolic_array_controller_ws #(
       .ROWS            (ROWS),
       .COLS            (COLS),
       .ADDR_W          (ADDR_W),
@@ -242,7 +249,7 @@ module systolic_array_top_os #(
       .bram_data_o    (weight_wr_bram_data_o)
   );
 
-  systolic_array_engine_os #(
+  systolic_array_engine_ws #(
       .ROWS    (ROWS),
       .COLS    (COLS),
       .ACT_W   (ACT_W),
@@ -265,10 +272,13 @@ module systolic_array_top_os #(
       .weight_bram_en_o  (weight_rd_bram_en_o),
       .weight_bram_addr_o(weight_rd_bram_addr_o),
       .weight_bram_data_i(weight_rd_bram_data_i),
-      .acc_bram_en_o     (acc_wr_bram_en_o),
-      .acc_bram_we_o     (acc_wr_bram_we_o),
-      .acc_bram_addr_o   (acc_wr_bram_addr_o),
-      .acc_bram_data_o   (acc_wr_bram_data_o),
+      .acc_rd_bram_en_o  (engine_acc_rd_bram_en_w),
+      .acc_rd_bram_addr_o(engine_acc_rd_bram_addr_w),
+      .acc_rd_bram_data_i(acc_rd_bram_data_i),
+      .acc_wr_bram_en_o  (acc_wr_bram_en_o),
+      .acc_wr_bram_we_o  (acc_wr_bram_we_o),
+      .acc_wr_bram_addr_o(acc_wr_bram_addr_o),
+      .acc_wr_bram_data_o(acc_wr_bram_data_o),
       .done_o            (engine_done_w)
   );
 
@@ -289,8 +299,8 @@ module systolic_array_top_os #(
       .m_axis_tvalid_o(m_axis_result_tvalid_o),
       .m_axis_tready_i(m_axis_result_tready_i),
       .m_axis_tlast_o (m_axis_result_tlast_o),
-      .bram_en_o      (acc_rd_bram_en_o),
-      .bram_addr_o    (acc_rd_bram_addr_o),
+      .bram_en_o      (result_acc_rd_bram_en_w),
+      .bram_addr_o    (result_acc_rd_bram_addr_w),
       .bram_data_i    (acc_rd_bram_data_i)
   );
 
