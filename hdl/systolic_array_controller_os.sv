@@ -1,26 +1,25 @@
 module systolic_array_controller_os #(
+    parameter int ROWS   = 16,
+    parameter int COLS   = 16,
     parameter int ADDR_W = 10,
-    parameter int LEN_W  = 16
+    parameter int LEN_W  = 16,
+    parameter logic [ADDR_W-1:0] ACT_BASE_ADDR    = '0,
+    parameter logic [ADDR_W-1:0] WEIGHT_BASE_ADDR = '0,
+    parameter logic [ADDR_W-1:0] ACC_BASE_ADDR    = '0
 ) (
     input logic aclk_i,
     input logic aresetn_i,
 
-    input  logic start_i,
-    input  logic clear_i,
-    output logic busy_o,
-    output logic done_o,
-    output logic error_o,
+    input  logic       start_i,
+    input  logic       clear_i,
+    output logic       busy_o,
+    output logic       done_o,
+    output logic       error_o,
     output logic [3:0] state_o,
 
-    input  logic [ADDR_W-1:0] m_size_i,
-    input  logic [ADDR_W-1:0] n_size_i,
-    input  logic [ADDR_W-1:0] k_size_i,
-    input  logic [ADDR_W-1:0] act_base_addr_i,
-    input  logic [ADDR_W-1:0] weight_base_addr_i,
-    input  logic [ADDR_W-1:0] acc_base_addr_i,
-    input  logic [ LEN_W-1:0] act_length_i,
-    input  logic [ LEN_W-1:0] weight_length_i,
-    input  logic [ LEN_W-1:0] result_length_i,
+    input logic [ADDR_W-1:0] m_size_i,
+    input logic [ADDR_W-1:0] n_size_i,
+    input logic [ADDR_W-1:0] k_size_i,
 
     output logic              act_load_start_o,
     output logic [ADDR_W-1:0] act_load_base_addr_o,
@@ -70,40 +69,63 @@ module systolic_array_controller_os #(
   logic [ADDR_W-1:0] m_size_r;
   logic [ADDR_W-1:0] n_size_r;
   logic [ADDR_W-1:0] k_size_r;
-  logic [ADDR_W-1:0] act_base_addr_r;
-  logic [ADDR_W-1:0] weight_base_addr_r;
-  logic [ADDR_W-1:0] acc_base_addr_r;
   logic [ LEN_W-1:0] act_length_r;
   logic [ LEN_W-1:0] weight_length_r;
   logic [ LEN_W-1:0] result_length_r;
 
   logic              accept_start_w;
 
+  function automatic logic [LEN_W-1:0] ceil_div_const(
+      input logic [ADDR_W-1:0] value,
+      input int                divisor
+  );
+    logic [ADDR_W:0] adjusted;
+    begin
+      if (value == '0) begin
+        ceil_div_const = '0;
+      end else begin
+        adjusted       = {1'b0, value} + (ADDR_W + 1)'(divisor - 1);
+        ceil_div_const = LEN_W'(adjusted / (ADDR_W + 1)'(divisor));
+      end
+    end
+  endfunction
+
+  function automatic logic [LEN_W-1:0] mul_len_addr(
+      input logic [ LEN_W-1:0] lhs,
+      input logic [ADDR_W-1:0] rhs
+  );
+    logic [LEN_W+ADDR_W-1:0] product;
+    begin
+      product = lhs * rhs;
+      mul_len_addr = product[LEN_W-1:0];
+    end
+  endfunction
+
   assign accept_start_w = start_i && ((state_r == ST_IDLE) || (state_r == ST_DONE));
 
-  assign busy_o = (state_r != ST_IDLE) && (state_r != ST_DONE) && (state_r != ST_ERROR);
-  assign done_o = (state_r == ST_DONE);
+  assign busy_o  = (state_r != ST_IDLE) && (state_r != ST_DONE) && (state_r != ST_ERROR);
+  assign done_o  = (state_r == ST_DONE);
   assign error_o = (state_r == ST_ERROR);
   assign state_o = state_r;
 
   assign act_load_start_o = (state_r == ST_START_ACT);
-  assign act_load_base_addr_o = act_base_addr_r;
+  assign act_load_base_addr_o = ACT_BASE_ADDR;
   assign act_load_length_o = act_length_r;
 
   assign weight_load_start_o = (state_r == ST_START_WEIGHT);
-  assign weight_load_base_addr_o = weight_base_addr_r;
+  assign weight_load_base_addr_o = WEIGHT_BASE_ADDR;
   assign weight_load_length_o = weight_length_r;
 
   assign engine_start_o = (state_r == ST_START_ENGINE);
   assign engine_m_size_o = m_size_r;
   assign engine_n_size_o = n_size_r;
   assign engine_k_size_o = k_size_r;
-  assign engine_act_base_addr_o = act_base_addr_r;
-  assign engine_weight_base_addr_o = weight_base_addr_r;
-  assign engine_acc_base_addr_o = acc_base_addr_r;
+  assign engine_act_base_addr_o = ACT_BASE_ADDR;
+  assign engine_weight_base_addr_o = WEIGHT_BASE_ADDR;
+  assign engine_acc_base_addr_o = ACC_BASE_ADDR;
 
   assign result_store_start_o = (state_r == ST_START_RESULT);
-  assign result_store_base_addr_o = acc_base_addr_r;
+  assign result_store_base_addr_o = ACC_BASE_ADDR;
   assign result_store_length_o = result_length_r;
 
   always_comb begin
@@ -184,29 +206,23 @@ module systolic_array_controller_os #(
 
   always_ff @(posedge aclk_i) begin
     if (!aresetn_i) begin
-      state_r          <= ST_IDLE;
-      m_size_r         <= '0;
-      n_size_r         <= '0;
-      k_size_r         <= '0;
-      act_base_addr_r  <= '0;
-      weight_base_addr_r <= '0;
-      acc_base_addr_r  <= '0;
-      act_length_r     <= '0;
-      weight_length_r  <= '0;
-      result_length_r  <= '0;
+      state_r         <= ST_IDLE;
+      m_size_r        <= '0;
+      n_size_r        <= '0;
+      k_size_r        <= '0;
+      act_length_r    <= '0;
+      weight_length_r <= '0;
+      result_length_r <= '0;
     end else begin
       state_r <= state_n;
 
       if (accept_start_w) begin
-        m_size_r           <= m_size_i;
-        n_size_r           <= n_size_i;
-        k_size_r           <= k_size_i;
-        act_base_addr_r    <= act_base_addr_i;
-        weight_base_addr_r <= weight_base_addr_i;
-        acc_base_addr_r    <= acc_base_addr_i;
-        act_length_r       <= act_length_i;
-        weight_length_r    <= weight_length_i;
-        result_length_r    <= result_length_i;
+        m_size_r        <= m_size_i;
+        n_size_r        <= n_size_i;
+        k_size_r        <= k_size_i;
+        act_length_r    <= mul_len_addr(ceil_div_const(m_size_i, ROWS), k_size_i);
+        weight_length_r <= mul_len_addr(ceil_div_const(n_size_i, COLS), k_size_i);
+        result_length_r <= mul_len_addr(ceil_div_const(m_size_i, ROWS), n_size_i);
       end
     end
   end

@@ -1,6 +1,11 @@
 module tb_systolic_array_controller_os;
+  localparam int ROWS   = 2;
+  localparam int COLS   = 3;
   localparam int ADDR_W = 8;
   localparam int LEN_W  = 8;
+  localparam logic [ADDR_W-1:0] ACT_BASE_ADDR    = ADDR_W'(10);
+  localparam logic [ADDR_W-1:0] WEIGHT_BASE_ADDR = ADDR_W'(80);
+  localparam logic [ADDR_W-1:0] ACC_BASE_ADDR    = ADDR_W'(140);
 
   localparam logic [3:0] ST_IDLE         = 4'd0;
   localparam logic [3:0] ST_START_ACT    = 4'd1;
@@ -26,12 +31,6 @@ module tb_systolic_array_controller_os;
   logic [ADDR_W-1:0] m_size_i;
   logic [ADDR_W-1:0] n_size_i;
   logic [ADDR_W-1:0] k_size_i;
-  logic [ADDR_W-1:0] act_base_addr_i;
-  logic [ADDR_W-1:0] weight_base_addr_i;
-  logic [ADDR_W-1:0] acc_base_addr_i;
-  logic [LEN_W-1:0] act_length_i;
-  logic [LEN_W-1:0] weight_length_i;
-  logic [LEN_W-1:0] result_length_i;
 
   logic act_load_start_o;
   logic [ADDR_W-1:0] act_load_base_addr_o;
@@ -61,8 +60,13 @@ module tb_systolic_array_controller_os;
   logic result_store_error_i;
 
   systolic_array_controller_os #(
+      .ROWS(ROWS),
+      .COLS(COLS),
       .ADDR_W(ADDR_W),
-      .LEN_W (LEN_W)
+      .LEN_W(LEN_W),
+      .ACT_BASE_ADDR(ACT_BASE_ADDR),
+      .WEIGHT_BASE_ADDR(WEIGHT_BASE_ADDR),
+      .ACC_BASE_ADDR(ACC_BASE_ADDR)
   ) dut (
       .aclk_i(aclk_i),
       .aresetn_i(aresetn_i),
@@ -75,12 +79,6 @@ module tb_systolic_array_controller_os;
       .m_size_i(m_size_i),
       .n_size_i(n_size_i),
       .k_size_i(k_size_i),
-      .act_base_addr_i(act_base_addr_i),
-      .weight_base_addr_i(weight_base_addr_i),
-      .acc_base_addr_i(acc_base_addr_i),
-      .act_length_i(act_length_i),
-      .weight_length_i(weight_length_i),
-      .result_length_i(result_length_i),
       .act_load_start_o(act_load_start_o),
       .act_load_base_addr_o(act_load_base_addr_o),
       .act_load_length_o(act_load_length_o),
@@ -125,12 +123,6 @@ module tb_systolic_array_controller_os;
       m_size_i = '0;
       n_size_i = '0;
       k_size_i = '0;
-      act_base_addr_i = '0;
-      weight_base_addr_i = '0;
-      acc_base_addr_i = '0;
-      act_length_i = '0;
-      weight_length_i = '0;
-      result_length_i = '0;
       act_load_done_i = 1'b0;
       act_load_error_i = 1'b0;
       weight_load_done_i = 1'b0;
@@ -227,19 +219,11 @@ module tb_systolic_array_controller_os;
     end
   endtask
 
-  task automatic set_config(input int m_size, input int n_size, input int k_size,
-                            input int act_base, input int weight_base, input int acc_base,
-                            input int act_len, input int weight_len, input int result_len);
+  task automatic set_sizes(input int m_size, input int n_size, input int k_size);
     begin
       m_size_i = ADDR_W'(m_size);
       n_size_i = ADDR_W'(n_size);
       k_size_i = ADDR_W'(k_size);
-      act_base_addr_i = ADDR_W'(act_base);
-      weight_base_addr_i = ADDR_W'(weight_base);
-      acc_base_addr_i = ADDR_W'(acc_base);
-      act_length_i = LEN_W'(act_len);
-      weight_length_i = LEN_W'(weight_len);
-      result_length_i = LEN_W'(result_len);
     end
   endtask
 
@@ -256,35 +240,37 @@ module tb_systolic_array_controller_os;
     aresetn_i = 1'b1;
     tick();
 
-    set_config(2, 3, 4, 10, 80, 140, 4, 5, 6);
+    // ROWS=2, COLS=3, M=5, N=7, K=4:
+    // m_tiles=3, n_tiles=3, act_length=12, weight_length=12, result_length=21.
+    set_sizes(5, 7, 4);
     pulse_start();
 
     check_state("activation start state", ST_START_ACT);
     check_bit("activation start pulse", act_load_start_o, 1'b1);
     check_bit("busy during activation start", busy_o, 1'b1);
-    check_word("activation base", act_load_base_addr_o, ADDR_W'(10));
-    check_len("activation length", act_load_length_o, LEN_W'(4));
-    check_word("engine m latched", engine_m_size_o, ADDR_W'(2));
-    check_word("engine n latched", engine_n_size_o, ADDR_W'(3));
+    check_word("activation base", act_load_base_addr_o, ACT_BASE_ADDR);
+    check_len("activation length", act_load_length_o, LEN_W'(12));
+    check_word("engine m latched", engine_m_size_o, ADDR_W'(5));
+    check_word("engine n latched", engine_n_size_o, ADDR_W'(7));
     check_word("engine k latched", engine_k_size_o, ADDR_W'(4));
 
     tick();
     check_state("wait activation", ST_WAIT_ACT);
     check_bit("activation pulse clears", act_load_start_o, 1'b0);
 
-    set_config(9, 9, 9, 1, 2, 3, 1, 1, 1);
+    set_sizes(9, 9, 9);
     start_i = 1'b1;
     tick();
     start_i = 1'b0;
     check_state("busy ignores new start", ST_WAIT_ACT);
-    check_word("latched m unchanged", engine_m_size_o, ADDR_W'(2));
-    check_word("latched act base unchanged", act_load_base_addr_o, ADDR_W'(10));
+    check_word("latched m unchanged", engine_m_size_o, ADDR_W'(5));
+    check_len("latched act length unchanged", act_load_length_o, LEN_W'(12));
 
     pulse_act_done();
     check_state("weight start state", ST_START_WEIGHT);
     check_bit("weight start pulse", weight_load_start_o, 1'b1);
-    check_word("weight base", weight_load_base_addr_o, ADDR_W'(80));
-    check_len("weight length", weight_load_length_o, LEN_W'(5));
+    check_word("weight base", weight_load_base_addr_o, WEIGHT_BASE_ADDR);
+    check_len("weight length", weight_load_length_o, LEN_W'(12));
 
     tick();
     check_state("wait weight", ST_WAIT_WEIGHT);
@@ -293,9 +279,9 @@ module tb_systolic_array_controller_os;
     pulse_weight_done();
     check_state("engine start state", ST_START_ENGINE);
     check_bit("engine start pulse", engine_start_o, 1'b1);
-    check_word("engine act base", engine_act_base_addr_o, ADDR_W'(10));
-    check_word("engine weight base", engine_weight_base_addr_o, ADDR_W'(80));
-    check_word("engine acc base", engine_acc_base_addr_o, ADDR_W'(140));
+    check_word("engine act base", engine_act_base_addr_o, ACT_BASE_ADDR);
+    check_word("engine weight base", engine_weight_base_addr_o, WEIGHT_BASE_ADDR);
+    check_word("engine acc base", engine_acc_base_addr_o, ACC_BASE_ADDR);
 
     tick();
     check_state("wait engine", ST_WAIT_ENGINE);
@@ -304,8 +290,8 @@ module tb_systolic_array_controller_os;
     pulse_engine_done();
     check_state("result start state", ST_START_RESULT);
     check_bit("result start pulse", result_store_start_o, 1'b1);
-    check_word("result base uses acc base", result_store_base_addr_o, ADDR_W'(140));
-    check_len("result length", result_store_length_o, LEN_W'(6));
+    check_word("result base uses acc base", result_store_base_addr_o, ACC_BASE_ADDR);
+    check_len("result length", result_store_length_o, LEN_W'(21));
 
     tick();
     check_state("wait result", ST_WAIT_RESULT);
@@ -320,10 +306,14 @@ module tb_systolic_array_controller_os;
     check_state("clear done", ST_IDLE);
     check_bit("done clears", done_o, 1'b0);
 
-    set_config(4, 4, 4, 20, 90, 150, 7, 8, 9);
+    set_sizes(4, 4, 4);
     pulse_start();
     tick();
     check_state("second op wait activation", ST_WAIT_ACT);
+    check_len("second op act length", act_load_length_o, LEN_W'(8));
+    check_len("second op weight length", weight_load_length_o, LEN_W'(8));
+    check_len("second op result length", result_store_length_o, LEN_W'(8));
+
     act_load_error_i = 1'b1;
     tick();
     act_load_error_i = 1'b0;
