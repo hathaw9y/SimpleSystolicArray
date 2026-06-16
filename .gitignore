@@ -1,0 +1,38 @@
+# Vivado project/build outputs
+.Xil/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+
+# Root-level generated Vivado project directories in this repo
+/BD/
+/IP/
+
+# Vivado/XSIM logs, journals, and backups
+*.jou
+*.log
+*.pb
+*.str
+*.backup.jou
+*.backup.log
+vivado_pid*.str
+webtalk*.jou
+webtalk*.log
+
+# XSIM generated files
+xsim.dir/
+*.wdb
+*.vcd
+*.fst
+*.vpd
+/xsim.sh
+/axsim.sh
+
+# Tool/editor noise
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
