@@ -35,20 +35,20 @@ module tb_systolic_array_top_os;
   logic S_AXI_RVALID;
   logic S_AXI_RREADY;
 
-  logic [ROWS*ACT_W-1:0] s_axis_tdata_act;
-  logic s_axis_tvalid_act;
-  logic s_axis_tready_act;
-  logic s_axis_tlast_act;
+  logic [ROWS*ACT_W-1:0] s_axis_act_tdata;
+  logic s_axis_act_tvalid;
+  logic s_axis_act_tready;
+  logic s_axis_act_tlast;
 
-  logic [COLS*WEIGHT_W-1:0] s_axis_tdata_weight;
-  logic s_axis_tvalid_weight;
-  logic s_axis_tready_weight;
-  logic s_axis_tlast_weight;
+  logic [COLS*WEIGHT_W-1:0] s_axis_weight_tdata;
+  logic s_axis_weight_tvalid;
+  logic s_axis_weight_tready;
+  logic s_axis_weight_tlast;
 
-  logic [ROWS*ACC_W-1:0] m_axis_tdata_result;
-  logic m_axis_tvalid_result;
-  logic m_axis_tready_result;
-  logic m_axis_tlast_result;
+  logic [ROWS*ACC_W-1:0] m_axis_result_tdata;
+  logic m_axis_result_tvalid;
+  logic m_axis_result_tready;
+  logic m_axis_result_tlast;
 
   logic act_wr_bram_en_o;
   logic act_wr_bram_we_o;
@@ -111,18 +111,18 @@ module tb_systolic_array_top_os;
       .S_AXI_RRESP(S_AXI_RRESP),
       .S_AXI_RVALID(S_AXI_RVALID),
       .S_AXI_RREADY(S_AXI_RREADY),
-      .s_axis_tdata_act(s_axis_tdata_act),
-      .s_axis_tvalid_act(s_axis_tvalid_act),
-      .s_axis_tready_act(s_axis_tready_act),
-      .s_axis_tlast_act(s_axis_tlast_act),
-      .s_axis_tdata_weight(s_axis_tdata_weight),
-      .s_axis_tvalid_weight(s_axis_tvalid_weight),
-      .s_axis_tready_weight(s_axis_tready_weight),
-      .s_axis_tlast_weight(s_axis_tlast_weight),
-      .m_axis_tdata_result(m_axis_tdata_result),
-      .m_axis_tvalid_result(m_axis_tvalid_result),
-      .m_axis_tready_result(m_axis_tready_result),
-      .m_axis_tlast_result(m_axis_tlast_result),
+      .s_axis_act_tdata(s_axis_act_tdata),
+      .s_axis_act_tvalid(s_axis_act_tvalid),
+      .s_axis_act_tready(s_axis_act_tready),
+      .s_axis_act_tlast(s_axis_act_tlast),
+      .s_axis_weight_tdata(s_axis_weight_tdata),
+      .s_axis_weight_tvalid(s_axis_weight_tvalid),
+      .s_axis_weight_tready(s_axis_weight_tready),
+      .s_axis_weight_tlast(s_axis_weight_tlast),
+      .m_axis_result_tdata(m_axis_result_tdata),
+      .m_axis_result_tvalid(m_axis_result_tvalid),
+      .m_axis_result_tready(m_axis_result_tready),
+      .m_axis_result_tlast(m_axis_result_tlast),
       .act_wr_bram_en_o(act_wr_bram_en_o),
       .act_wr_bram_we_o(act_wr_bram_we_o),
       .act_wr_bram_addr_o(act_wr_bram_addr_o),
@@ -199,15 +199,15 @@ module tb_systolic_array_top_os;
       S_AXI_ARVALID = 1'b0;
       S_AXI_RREADY = 1'b0;
 
-      s_axis_tdata_act = '0;
-      s_axis_tvalid_act = 1'b0;
-      s_axis_tlast_act = 1'b0;
+      s_axis_act_tdata = '0;
+      s_axis_act_tvalid = 1'b0;
+      s_axis_act_tlast = 1'b0;
 
-      s_axis_tdata_weight = '0;
-      s_axis_tvalid_weight = 1'b0;
-      s_axis_tlast_weight = 1'b0;
+      s_axis_weight_tdata = '0;
+      s_axis_weight_tvalid = 1'b0;
+      s_axis_weight_tlast = 1'b0;
 
-      m_axis_tready_result = 1'b0;
+      m_axis_result_tready = 1'b0;
     end
   endtask
 
@@ -319,23 +319,23 @@ module tb_systolic_array_top_os;
   task automatic send_act_beat(input logic [ROWS*ACT_W-1:0] data,
                                input logic last);
     begin
-      s_axis_tdata_act = data;
-      s_axis_tlast_act = last;
-      s_axis_tvalid_act = 1'b1;
+      s_axis_act_tdata = data;
+      s_axis_act_tlast = last;
+      s_axis_act_tvalid = 1'b1;
 
       for (int cycle = 0; cycle < 16; cycle++) begin
-        if (s_axis_tready_act) begin
+        if (s_axis_act_tready) begin
           tick();
-          s_axis_tvalid_act = 1'b0;
-          s_axis_tlast_act = 1'b0;
-          s_axis_tdata_act = '0;
+          s_axis_act_tvalid = 1'b0;
+          s_axis_act_tlast = 1'b0;
+          s_axis_act_tdata = '0;
           cycle = 16;
         end else begin
           tick();
         end
       end
 
-      if (s_axis_tvalid_act) begin
+      if (s_axis_act_tvalid) begin
         $error("activation stream did not become ready");
         $finish;
       end
@@ -345,23 +345,23 @@ module tb_systolic_array_top_os;
   task automatic send_weight_beat(input logic [COLS*WEIGHT_W-1:0] data,
                                   input logic last);
     begin
-      s_axis_tdata_weight = data;
-      s_axis_tlast_weight = last;
-      s_axis_tvalid_weight = 1'b1;
+      s_axis_weight_tdata = data;
+      s_axis_weight_tlast = last;
+      s_axis_weight_tvalid = 1'b1;
 
       for (int cycle = 0; cycle < 16; cycle++) begin
-        if (s_axis_tready_weight) begin
+        if (s_axis_weight_tready) begin
           tick();
-          s_axis_tvalid_weight = 1'b0;
-          s_axis_tlast_weight = 1'b0;
-          s_axis_tdata_weight = '0;
+          s_axis_weight_tvalid = 1'b0;
+          s_axis_weight_tlast = 1'b0;
+          s_axis_weight_tdata = '0;
           cycle = 16;
         end else begin
           tick();
         end
       end
 
-      if (s_axis_tvalid_weight) begin
+      if (s_axis_weight_tvalid) begin
         $error("weight stream did not become ready");
         $finish;
       end
@@ -396,13 +396,13 @@ module tb_systolic_array_top_os;
     begin
       expected[0] = pack_acc(19, 43);
       expected[1] = pack_acc(22, 50);
-      m_axis_tready_result = 1'b1;
+      m_axis_result_tready = 1'b1;
 
       for (int beat = 0; beat < 2; beat++) begin
         seen = 1'b0;
         for (int cycle = 0; cycle < 32; cycle++) begin
           tick();
-          if (m_axis_tvalid_result) begin
+          if (m_axis_result_tvalid) begin
             seen = 1'b1;
             cycle = 32;
           end
@@ -413,23 +413,23 @@ module tb_systolic_array_top_os;
           $finish;
         end
 
-        check_acc_word("result stream", m_axis_tdata_result, expected[beat]);
-        if (m_axis_tlast_result !== (beat == 1)) begin
-          $error("result tlast at beat %0d: got %0b", beat, m_axis_tlast_result);
+        check_acc_word("result stream", m_axis_result_tdata, expected[beat]);
+        if (m_axis_result_tlast !== (beat == 1)) begin
+          $error("result tlast at beat %0d: got %0b", beat, m_axis_result_tlast);
           $finish;
         end
 
         tick();
 
         if (beat == 1) begin
-          if (m_axis_tvalid_result) begin
+          if (m_axis_result_tvalid) begin
             $error("unexpected result beat after tlast");
             $finish;
           end
         end
       end
 
-      m_axis_tready_result = 1'b0;
+      m_axis_result_tready = 1'b0;
     end
   endtask
 

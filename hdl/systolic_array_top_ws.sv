@@ -10,7 +10,11 @@ module systolic_array_top_ws #(
     parameter logic [ADDR_W-1:0] WEIGHT_BASE_ADDR = '0,
     parameter logic [ADDR_W-1:0] ACC_BASE_ADDR    = '0
 ) (
+    (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 S_AXI_ACLK CLK" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF S_AXI:S_AXIS_ACT:S_AXIS_WEIGHT:M_AXIS_RESULT, ASSOCIATED_RESET S_AXI_ARESETN" *)
     input logic S_AXI_ACLK,
+    (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 S_AXI_ARESETN RST" *)
+    (* X_INTERFACE_PARAMETER = "POLARITY ACTIVE_LOW" *)
     input logic S_AXI_ARESETN,
 
     input  logic [ 3:0] S_AXI_AWADDR,
@@ -33,20 +37,32 @@ module systolic_array_top_ws #(
     output logic        S_AXI_RVALID,
     input  logic        S_AXI_RREADY,
 
-    input  logic [ROWS*ACT_W-1:0] s_axis_tdata_act,
-    input  logic                  s_axis_tvalid_act,
-    output logic                  s_axis_tready_act,
-    input  logic                  s_axis_tlast_act,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_ACT TDATA" *)
+    input  logic [ROWS*ACT_W-1:0] s_axis_act_tdata,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_ACT TVALID" *)
+    input  logic                  s_axis_act_tvalid,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_ACT TREADY" *)
+    output logic                  s_axis_act_tready,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_ACT TLAST" *)
+    input  logic                  s_axis_act_tlast,
 
-    input  logic [COLS*WEIGHT_W-1:0] s_axis_tdata_weight,
-    input  logic                     s_axis_tvalid_weight,
-    output logic                     s_axis_tready_weight,
-    input  logic                     s_axis_tlast_weight,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_WEIGHT TDATA" *)
+    input  logic [COLS*WEIGHT_W-1:0] s_axis_weight_tdata,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_WEIGHT TVALID" *)
+    input  logic                     s_axis_weight_tvalid,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_WEIGHT TREADY" *)
+    output logic                     s_axis_weight_tready,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS_WEIGHT TLAST" *)
+    input  logic                     s_axis_weight_tlast,
 
-    output logic [COLS*ACC_W-1:0] m_axis_tdata_result,
-    output logic                  m_axis_tvalid_result,
-    input  logic                  m_axis_tready_result,
-    output logic                  m_axis_tlast_result,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TDATA" *)
+    output logic [COLS*ACC_W-1:0] m_axis_result_tdata,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TVALID" *)
+    output logic                  m_axis_result_tvalid,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TREADY" *)
+    input  logic                  m_axis_result_tready,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TLAST" *)
+    output logic                  m_axis_result_tlast,
 
     output logic                  act_wr_bram_en_o,
     output logic                  act_wr_bram_we_o,
@@ -216,10 +232,10 @@ module systolic_array_top_ws #(
       .busy_o         (act_load_busy_w),
       .done_o         (act_load_done_w),
       .error_o        (act_load_error_w),
-      .s_axis_tdata_i (s_axis_tdata_act),
-      .s_axis_tvalid_i(s_axis_tvalid_act),
-      .s_axis_tready_o(s_axis_tready_act),
-      .s_axis_tlast_i (s_axis_tlast_act),
+      .s_axis_tdata_i (s_axis_act_tdata),
+      .s_axis_tvalid_i(s_axis_act_tvalid),
+      .s_axis_tready_o(s_axis_act_tready),
+      .s_axis_tlast_i (s_axis_act_tlast),
       .bram_en_o      (act_wr_bram_en_o),
       .bram_we_o      (act_wr_bram_we_o),
       .bram_addr_o    (act_wr_bram_addr_o),
@@ -239,10 +255,10 @@ module systolic_array_top_ws #(
       .busy_o         (weight_load_busy_w),
       .done_o         (weight_load_done_w),
       .error_o        (weight_load_error_w),
-      .s_axis_tdata_i (s_axis_tdata_weight),
-      .s_axis_tvalid_i(s_axis_tvalid_weight),
-      .s_axis_tready_o(s_axis_tready_weight),
-      .s_axis_tlast_i (s_axis_tlast_weight),
+      .s_axis_tdata_i (s_axis_weight_tdata),
+      .s_axis_tvalid_i(s_axis_weight_tvalid),
+      .s_axis_tready_o(s_axis_weight_tready),
+      .s_axis_tlast_i (s_axis_weight_tlast),
       .bram_en_o      (weight_wr_bram_en_o),
       .bram_we_o      (weight_wr_bram_we_o),
       .bram_addr_o    (weight_wr_bram_addr_o),
@@ -295,10 +311,10 @@ module systolic_array_top_ws #(
       .busy_o         (result_store_busy_w),
       .done_o         (result_store_done_w),
       .error_o        (result_store_error_w),
-      .m_axis_tdata_o (m_axis_tdata_result),
-      .m_axis_tvalid_o(m_axis_tvalid_result),
-      .m_axis_tready_i(m_axis_tready_result),
-      .m_axis_tlast_o (m_axis_tlast_result),
+      .m_axis_tdata_o (m_axis_result_tdata),
+      .m_axis_tvalid_o(m_axis_result_tvalid),
+      .m_axis_tready_i(m_axis_result_tready),
+      .m_axis_tlast_o (m_axis_result_tlast),
       .bram_en_o      (result_acc_rd_bram_en_w),
       .bram_addr_o    (result_acc_rd_bram_addr_w),
       .bram_data_i    (acc_rd_bram_data_i)
