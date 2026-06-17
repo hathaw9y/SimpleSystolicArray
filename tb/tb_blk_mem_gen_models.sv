@@ -2,7 +2,7 @@ module tb_simple_dual_port_bram_model #(
     parameter int DATA_W       = 128,
     parameter int ADDR_W       = 9,
     parameter int DEPTH        = 512,
-    parameter int READ_LATENCY = 2
+    parameter int READ_LATENCY = 1
 ) (
     input  logic              clka,
     input  logic              ena,

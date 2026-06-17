@@ -235,9 +235,6 @@ module tb_gemm_fsm_os;
       tick();
       check_bit("drain no early store 3", storer_valid_o, 1'b0);
 
-      tick();
-      check_bit("drain no early store 4", storer_valid_o, 1'b0);
-
       for (int c = 0; c < valid_cols; c++) begin
         tick();
         check_bit("store valid", storer_valid_o, 1'b1);

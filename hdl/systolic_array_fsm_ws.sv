@@ -70,7 +70,7 @@ module systolic_array_fsm_ws #(
   } state_t;
 
   localparam int LOAD_CNT_W = $clog2(ROWS) + 1;
-  localparam int WEIGHT_FLUSH_CYCLES = 2;
+  localparam int WEIGHT_FLUSH_CYCLES = 1;
   localparam int WEIGHT_FLUSH_CNT_W = $clog2(WEIGHT_FLUSH_CYCLES) + 1;
 
   localparam logic [ADDR_W-1:0] ROWS_W = ADDR_W'(ROWS);
