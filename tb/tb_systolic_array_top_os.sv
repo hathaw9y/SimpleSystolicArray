@@ -348,7 +348,7 @@ module tb_systolic_array_top_os;
       // C = A x B = [[19, 22], [43, 50]], streamed one output column per beat.
       expected[0] = pack_acc(19, 43);
       expected[1] = pack_acc(22, 50);
-      m_axis_result_tready = 1'b1;
+      m_axis_result_tready = 1'b0;
 
       for (int beat = 0; beat < 2; beat++) begin
         seen = 1'b0;
@@ -371,7 +371,9 @@ module tb_systolic_array_top_os;
           $finish;
         end
 
+        m_axis_result_tready = 1'b1;
         tick();
+        m_axis_result_tready = 1'b0;
 
         if (beat == 1) begin
           if (m_axis_result_tvalid) begin
