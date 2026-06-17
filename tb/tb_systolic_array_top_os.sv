@@ -56,13 +56,10 @@ module tb_systolic_array_top_os;
   logic [0:0] act_bram_wea;
   logic [ADDR_W-1:0] act_bram_addra;
   logic [ROWS*ACT_W-1:0] act_bram_dina;
-  logic [ROWS*ACT_W-1:0] act_bram_douta;
   logic act_bram_clkb;
   logic act_bram_rstb;
   logic act_bram_enb;
-  logic [0:0] act_bram_web;
   logic [ADDR_W-1:0] act_bram_addrb;
-  logic [ROWS*ACT_W-1:0] act_bram_dinb;
   logic [ROWS*ACT_W-1:0] act_bram_doutb;
 
   logic weight_bram_clka;
@@ -71,13 +68,10 @@ module tb_systolic_array_top_os;
   logic [0:0] weight_bram_wea;
   logic [ADDR_W-1:0] weight_bram_addra;
   logic [COLS*WEIGHT_W-1:0] weight_bram_dina;
-  logic [COLS*WEIGHT_W-1:0] weight_bram_douta;
   logic weight_bram_clkb;
   logic weight_bram_rstb;
   logic weight_bram_enb;
-  logic [0:0] weight_bram_web;
   logic [ADDR_W-1:0] weight_bram_addrb;
-  logic [COLS*WEIGHT_W-1:0] weight_bram_dinb;
   logic [COLS*WEIGHT_W-1:0] weight_bram_doutb;
 
   logic acc_bram_clka;
@@ -86,22 +80,15 @@ module tb_systolic_array_top_os;
   logic [0:0] acc_bram_wea;
   logic [ADDR_W-1:0] acc_bram_addra;
   logic [ROWS*ACC_W-1:0] acc_bram_dina;
-  logic [ROWS*ACC_W-1:0] acc_bram_douta;
   logic acc_bram_clkb;
   logic acc_bram_rstb;
   logic acc_bram_enb;
-  logic [0:0] acc_bram_web;
   logic [ADDR_W-1:0] acc_bram_addrb;
-  logic [ROWS*ACC_W-1:0] acc_bram_dinb;
   logic [ROWS*ACC_W-1:0] acc_bram_doutb;
 
   logic [ROWS*ACT_W-1:0] act_mem[256];
   logic [COLS*WEIGHT_W-1:0] weight_mem[256];
   logic [ROWS*ACC_W-1:0] acc_mem[256];
-
-  assign act_bram_douta = '0;
-  assign weight_bram_douta = '0;
-  assign acc_bram_douta = '0;
 
   systolic_array_top_os #(
       .ROWS            (ROWS),
@@ -154,13 +141,10 @@ module tb_systolic_array_top_os;
       .act_bram_wea(act_bram_wea),
       .act_bram_addra(act_bram_addra),
       .act_bram_dina(act_bram_dina),
-      .act_bram_douta(act_bram_douta),
       .act_bram_clkb(act_bram_clkb),
       .act_bram_rstb(act_bram_rstb),
       .act_bram_enb(act_bram_enb),
-      .act_bram_web(act_bram_web),
       .act_bram_addrb(act_bram_addrb),
-      .act_bram_dinb(act_bram_dinb),
       .act_bram_doutb(act_bram_doutb),
       .weight_bram_clka(weight_bram_clka),
       .weight_bram_rsta(weight_bram_rsta),
@@ -168,13 +152,10 @@ module tb_systolic_array_top_os;
       .weight_bram_wea(weight_bram_wea),
       .weight_bram_addra(weight_bram_addra),
       .weight_bram_dina(weight_bram_dina),
-      .weight_bram_douta(weight_bram_douta),
       .weight_bram_clkb(weight_bram_clkb),
       .weight_bram_rstb(weight_bram_rstb),
       .weight_bram_enb(weight_bram_enb),
-      .weight_bram_web(weight_bram_web),
       .weight_bram_addrb(weight_bram_addrb),
-      .weight_bram_dinb(weight_bram_dinb),
       .weight_bram_doutb(weight_bram_doutb),
       .acc_bram_clka(acc_bram_clka),
       .acc_bram_rsta(acc_bram_rsta),
@@ -182,13 +163,10 @@ module tb_systolic_array_top_os;
       .acc_bram_wea(acc_bram_wea),
       .acc_bram_addra(acc_bram_addra),
       .acc_bram_dina(acc_bram_dina),
-      .acc_bram_douta(acc_bram_douta),
       .acc_bram_clkb(acc_bram_clkb),
       .acc_bram_rstb(acc_bram_rstb),
       .acc_bram_enb(acc_bram_enb),
-      .acc_bram_web(acc_bram_web),
       .acc_bram_addrb(acc_bram_addrb),
-      .acc_bram_dinb(acc_bram_dinb),
       .acc_bram_doutb(acc_bram_doutb)
   );
 
