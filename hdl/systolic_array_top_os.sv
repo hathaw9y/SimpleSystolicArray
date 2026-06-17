@@ -66,6 +66,8 @@ module systolic_array_top_os #(
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA CLK" *)
     output logic                  act_bram_clka,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA RST" *)
+    output logic                  act_bram_rsta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA EN" *)
     output logic                  act_bram_ena,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA WE" *)
@@ -74,17 +76,27 @@ module systolic_array_top_os #(
     output logic [    ADDR_W-1:0] act_bram_addra,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA DIN" *)
     output logic [ROWS*ACT_W-1:0] act_bram_dina,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA DOUT" *)
+    input  logic [ROWS*ACT_W-1:0] act_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB CLK" *)
     output logic                  act_bram_clkb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB RST" *)
+    output logic                  act_bram_rstb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB EN" *)
     output logic                  act_bram_enb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB WE" *)
+    output logic [          0:0] act_bram_web,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB ADDR" *)
     output logic [    ADDR_W-1:0] act_bram_addrb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB DIN" *)
+    output logic [ROWS*ACT_W-1:0] act_bram_dinb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB DOUT" *)
     input  logic [ROWS*ACT_W-1:0] act_bram_doutb,
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA CLK" *)
     output logic                     weight_bram_clka,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA RST" *)
+    output logic                     weight_bram_rsta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA EN" *)
     output logic                     weight_bram_ena,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA WE" *)
@@ -93,17 +105,27 @@ module systolic_array_top_os #(
     output logic [       ADDR_W-1:0] weight_bram_addra,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA DIN" *)
     output logic [COLS*WEIGHT_W-1:0] weight_bram_dina,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA DOUT" *)
+    input  logic [COLS*WEIGHT_W-1:0] weight_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB CLK" *)
     output logic                     weight_bram_clkb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB RST" *)
+    output logic                     weight_bram_rstb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB EN" *)
     output logic                     weight_bram_enb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB WE" *)
+    output logic [             0:0] weight_bram_web,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB ADDR" *)
     output logic [       ADDR_W-1:0] weight_bram_addrb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB DIN" *)
+    output logic [COLS*WEIGHT_W-1:0] weight_bram_dinb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB DOUT" *)
     input  logic [COLS*WEIGHT_W-1:0] weight_bram_doutb,
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA CLK" *)
     output logic                  acc_bram_clka,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA RST" *)
+    output logic                  acc_bram_rsta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA EN" *)
     output logic                  acc_bram_ena,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA WE" *)
@@ -112,12 +134,20 @@ module systolic_array_top_os #(
     output logic [    ADDR_W-1:0] acc_bram_addra,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA DIN" *)
     output logic [ROWS*ACC_W-1:0] acc_bram_dina,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA DOUT" *)
+    input  logic [ROWS*ACC_W-1:0] acc_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB CLK" *)
     output logic                  acc_bram_clkb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB RST" *)
+    output logic                  acc_bram_rstb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB EN" *)
     output logic                  acc_bram_enb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB WE" *)
+    output logic [          0:0] acc_bram_web,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB ADDR" *)
     output logic [    ADDR_W-1:0] acc_bram_addrb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB DIN" *)
+    output logic [ROWS*ACC_W-1:0] acc_bram_dinb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB DOUT" *)
     input  logic [ROWS*ACC_W-1:0] acc_bram_doutb
 );
@@ -132,6 +162,20 @@ module systolic_array_top_os #(
   assign weight_bram_clkb = S_AXI_ACLK;
   assign acc_bram_clka = S_AXI_ACLK;
   assign acc_bram_clkb = S_AXI_ACLK;
+
+  assign act_bram_rsta = ~S_AXI_ARESETN;
+  assign act_bram_rstb = ~S_AXI_ARESETN;
+  assign weight_bram_rsta = ~S_AXI_ARESETN;
+  assign weight_bram_rstb = ~S_AXI_ARESETN;
+  assign acc_bram_rsta = ~S_AXI_ARESETN;
+  assign acc_bram_rstb = ~S_AXI_ARESETN;
+
+  assign act_bram_web = 1'b0;
+  assign act_bram_dinb = '0;
+  assign weight_bram_web = 1'b0;
+  assign weight_bram_dinb = '0;
+  assign acc_bram_web = 1'b0;
+  assign acc_bram_dinb = '0;
 
   logic [      31:0] ctrl_m_size_w;
   logic [      31:0] ctrl_n_size_w;
