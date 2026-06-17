@@ -343,47 +343,40 @@ module tb_systolic_array_top_os;
 
   task automatic collect_result_stream;
     logic [ROWS*ACC_W-1:0] expected[2];
-    bit seen;
+    int beat;
     begin
       // C = A x B = [[19, 22], [43, 50]], streamed one output column per beat.
       expected[0] = pack_acc(19, 43);
       expected[1] = pack_acc(22, 50);
-      m_axis_result_tready = 1'b0;
+      beat = 0;
+      m_axis_result_tready = 1'b1;
 
-      for (int beat = 0; beat < 2; beat++) begin
-        seen = 1'b0;
-        for (int cycle = 0; cycle < 4096; cycle++) begin
-          tick();
-          if (m_axis_result_tvalid) begin
-            seen = 1'b1;
-            cycle = 32;
-          end
-        end
-
-        if (!seen) begin
-          $error("result stream beat %0d did not assert valid", beat);
-          $finish;
-        end
-
-        check_acc_word("result stream", m_axis_result_tdata, expected[beat]);
-        if (m_axis_result_tlast !== (beat == 1)) begin
-          $error("result tlast at beat %0d: got %0b", beat, m_axis_result_tlast);
-          $finish;
-        end
-
-        m_axis_result_tready = 1'b1;
+      for (int cycle = 0; cycle < 4096; cycle++) begin
         tick();
-        m_axis_result_tready = 1'b0;
-
-        if (beat == 1) begin
-          if (m_axis_result_tvalid) begin
-            $error("unexpected result beat after tlast");
+        if (m_axis_result_tvalid && m_axis_result_tready) begin
+          if (beat >= 2) begin
+            $error("unexpected result beat after expected stream");
             $finish;
+          end
+
+          check_acc_word("result stream", m_axis_result_tdata, expected[beat]);
+          if (m_axis_result_tlast !== (beat == 1)) begin
+            $error("result tlast at beat %0d: got %0b", beat, m_axis_result_tlast);
+            $finish;
+          end
+
+          beat++;
+          if (beat == 2) begin
+            cycle = 4096;
           end
         end
       end
 
       m_axis_result_tready = 1'b0;
+      if (beat != 2) begin
+        $error("result stream ended with %0d beats, expected 2", beat);
+        $finish;
+      end
     end
   endtask
 
