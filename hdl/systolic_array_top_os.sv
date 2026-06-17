@@ -11,7 +11,7 @@ module systolic_array_top_os #(
     parameter logic [ADDR_W-1:0] ACC_BASE_ADDR    = '0
 ) (
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 S_AXI_ACLK CLK" *)
-    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF S_AXI:S_AXIS_ACT:S_AXIS_WEIGHT:M_AXIS_RESULT:ACT_BRAM_PORTA:ACT_BRAM_PORTB:WEIGHT_BRAM_PORTA:WEIGHT_BRAM_PORTB:ACC_BRAM_PORTA:ACC_BRAM_PORTB, ASSOCIATED_RESET S_AXI_ARESETN" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF S_AXI:S_AXIS_ACT:S_AXIS_WEIGHT:M_AXIS_RESULT, ASSOCIATED_RESET S_AXI_ARESETN" *)
     input logic S_AXI_ACLK,
     (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 S_AXI_ARESETN RST" *)
     (* X_INTERFACE_PARAMETER = "POLARITY ACTIVE_LOW" *)
@@ -62,107 +62,72 @@ module systolic_array_top_os #(
     (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TREADY" *)
     input  logic                  m_axis_result_tready,
     (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS_RESULT TLAST" *)
-    output logic                  m_axis_result_tlast,
-
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA CLK" *)
-    (* X_INTERFACE_MODE = "master ACT_BRAM_PORTA" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
-    output logic                  act_bram_clka,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA RST" *)
-    output logic                  act_bram_rsta,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA EN" *)
-    output logic                  act_bram_ena,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA WE" *)
-    output logic [          0:0] act_bram_wea,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA ADDR" *)
-    output logic [    ADDR_W-1:0] act_bram_addra,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA DIN" *)
-    output logic [ROWS*ACT_W-1:0] act_bram_dina,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB CLK" *)
-    (* X_INTERFACE_MODE = "master ACT_BRAM_PORTB" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
-    output logic                  act_bram_clkb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB RST" *)
-    output logic                  act_bram_rstb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB EN" *)
-    output logic                  act_bram_enb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB ADDR" *)
-    output logic [    ADDR_W-1:0] act_bram_addrb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB DOUT" *)
-    input  logic [ROWS*ACT_W-1:0] act_bram_doutb,
-
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA CLK" *)
-    (* X_INTERFACE_MODE = "master WEIGHT_BRAM_PORTA" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
-    output logic                     weight_bram_clka,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA RST" *)
-    output logic                     weight_bram_rsta,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA EN" *)
-    output logic                     weight_bram_ena,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA WE" *)
-    output logic [             0:0] weight_bram_wea,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA ADDR" *)
-    output logic [       ADDR_W-1:0] weight_bram_addra,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA DIN" *)
-    output logic [COLS*WEIGHT_W-1:0] weight_bram_dina,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB CLK" *)
-    (* X_INTERFACE_MODE = "master WEIGHT_BRAM_PORTB" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
-    output logic                     weight_bram_clkb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB RST" *)
-    output logic                     weight_bram_rstb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB EN" *)
-    output logic                     weight_bram_enb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB ADDR" *)
-    output logic [       ADDR_W-1:0] weight_bram_addrb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB DOUT" *)
-    input  logic [COLS*WEIGHT_W-1:0] weight_bram_doutb,
-
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA CLK" *)
-    (* X_INTERFACE_MODE = "master ACC_BRAM_PORTA" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
-    output logic                  acc_bram_clka,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA RST" *)
-    output logic                  acc_bram_rsta,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA EN" *)
-    output logic                  acc_bram_ena,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA WE" *)
-    output logic [          0:0] acc_bram_wea,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA ADDR" *)
-    output logic [    ADDR_W-1:0] acc_bram_addra,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA DIN" *)
-    output logic [ROWS*ACC_W-1:0] acc_bram_dina,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB CLK" *)
-    (* X_INTERFACE_MODE = "master ACC_BRAM_PORTB" *)
-    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
-    output logic                  acc_bram_clkb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB RST" *)
-    output logic                  acc_bram_rstb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB EN" *)
-    output logic                  acc_bram_enb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB ADDR" *)
-    output logic [    ADDR_W-1:0] acc_bram_addrb,
-    (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB DOUT" *)
-    input  logic [ROWS*ACC_W-1:0] acc_bram_doutb
+    output logic                  m_axis_result_tlast
 );
 
   localparam int ACT_BRAM_W = ROWS * ACT_W;
   localparam int WEIGHT_BRAM_W = COLS * WEIGHT_W;
   localparam int ACC_BRAM_W = ROWS * ACC_W;
 
-  assign act_bram_clka = S_AXI_ACLK;
-  assign act_bram_clkb = S_AXI_ACLK;
-  assign weight_bram_clka = S_AXI_ACLK;
-  assign weight_bram_clkb = S_AXI_ACLK;
-  assign acc_bram_clka = S_AXI_ACLK;
-  assign acc_bram_clkb = S_AXI_ACLK;
+  logic                  act_bram_ena;
+  logic [          0:0] act_bram_wea;
+  logic [    ADDR_W-1:0] act_bram_addra;
+  logic [ACT_BRAM_W-1:0] act_bram_dina;
+  logic                  act_bram_enb;
+  logic [    ADDR_W-1:0] act_bram_addrb;
+  logic [ACT_BRAM_W-1:0] act_bram_doutb;
 
-  assign act_bram_rsta = ~S_AXI_ARESETN;
-  assign act_bram_rstb = ~S_AXI_ARESETN;
-  assign weight_bram_rsta = ~S_AXI_ARESETN;
-  assign weight_bram_rstb = ~S_AXI_ARESETN;
-  assign acc_bram_rsta = ~S_AXI_ARESETN;
-  assign acc_bram_rstb = ~S_AXI_ARESETN;
+  logic                     weight_bram_ena;
+  logic [             0:0] weight_bram_wea;
+  logic [       ADDR_W-1:0] weight_bram_addra;
+  logic [WEIGHT_BRAM_W-1:0] weight_bram_dina;
+  logic                     weight_bram_enb;
+  logic [       ADDR_W-1:0] weight_bram_addrb;
+  logic [WEIGHT_BRAM_W-1:0] weight_bram_doutb;
+
+  logic                  acc_bram_ena;
+  logic [          0:0] acc_bram_wea;
+  logic [    ADDR_W-1:0] acc_bram_addra;
+  logic [ACC_BRAM_W-1:0] acc_bram_dina;
+  logic                  acc_bram_enb;
+  logic [    ADDR_W-1:0] acc_bram_addrb;
+  logic [ACC_BRAM_W-1:0] acc_bram_doutb;
+
+  W128_D512_BLK_MEM u_act_bram (
+      .clka (S_AXI_ACLK),
+      .ena  (act_bram_ena),
+      .wea  (act_bram_wea),
+      .addra(act_bram_addra),
+      .dina (act_bram_dina),
+      .clkb (S_AXI_ACLK),
+      .enb  (act_bram_enb),
+      .addrb(act_bram_addrb),
+      .doutb(act_bram_doutb)
+  );
+
+  W128_D512_BLK_MEM u_weight_bram (
+      .clka (S_AXI_ACLK),
+      .ena  (weight_bram_ena),
+      .wea  (weight_bram_wea),
+      .addra(weight_bram_addra),
+      .dina (weight_bram_dina),
+      .clkb (S_AXI_ACLK),
+      .enb  (weight_bram_enb),
+      .addrb(weight_bram_addrb),
+      .doutb(weight_bram_doutb)
+  );
+
+  W512_D512_BLK_MEM u_acc_bram (
+      .clka (S_AXI_ACLK),
+      .ena  (acc_bram_ena),
+      .wea  (acc_bram_wea),
+      .addra(acc_bram_addra),
+      .dina (acc_bram_dina),
+      .clkb (S_AXI_ACLK),
+      .enb  (acc_bram_enb),
+      .addrb(acc_bram_addrb),
+      .doutb(acc_bram_doutb)
+  );
 
   logic [      31:0] ctrl_m_size_w;
   logic [      31:0] ctrl_n_size_w;
