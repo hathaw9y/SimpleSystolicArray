@@ -54,8 +54,9 @@ module systolic_array_fsm_os #(
     DONE    = 3'd5   // 전체 GEMM 완료 pulse
   } state_t;
 
-  // 마지막 입력 이후 결과가 우하단까지 전파되는 데 필요한 대기 cycle.
-  localparam int DRAIN_LAST = ROWS + COLS - 2;
+  // 마지막 입력 read request 이후 결과가 우하단까지 전파되는 데 필요한 대기 cycle.
+  // BRAM Port B primitive output register 때문에 read data valid가 2-cycle 뒤에 나온다.
+  localparam int DRAIN_LAST = ROWS + COLS - 1;
   localparam int DRAIN_CNT_W = $clog2(ROWS + COLS) + 1;
   localparam int STORE_CNT_W = $clog2(COLS) + 1;
   localparam int STORE_IDX_W = (COLS <= 1) ? 1 : $clog2(COLS);

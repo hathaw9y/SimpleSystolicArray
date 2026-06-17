@@ -63,10 +63,11 @@ module systolic_array_engine_os #(
   endgenerate
 
   bram_loader #(
-      .ROWS  (ROWS),
-      .DATA_W(ACT_W),
-      .BRAM_W(ROWS * ACT_W),
-      .ADDR_W(ADDR_W)
+      .ROWS        (ROWS),
+      .DATA_W      (ACT_W),
+      .BRAM_W      (ROWS * ACT_W),
+      .ADDR_W      (ADDR_W),
+      .READ_LATENCY(2)
   ) u_act_loader (
       .aclk_i     (aclk_i),
       .aresetn_i  (aresetn_i),
@@ -80,10 +81,11 @@ module systolic_array_engine_os #(
   );
 
   bram_loader #(
-      .ROWS  (COLS),
-      .DATA_W(WEIGHT_W),
-      .BRAM_W(COLS * WEIGHT_W),
-      .ADDR_W(ADDR_W)
+      .ROWS        (COLS),
+      .DATA_W      (WEIGHT_W),
+      .BRAM_W      (COLS * WEIGHT_W),
+      .ADDR_W      (ADDR_W),
+      .READ_LATENCY(2)
   ) u_weight_loader (
       .aclk_i     (aclk_i),
       .aresetn_i  (aresetn_i),

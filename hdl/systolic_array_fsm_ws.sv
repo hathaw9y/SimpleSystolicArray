@@ -62,7 +62,7 @@ module systolic_array_fsm_ws #(
   typedef enum logic [3:0] {
     IDLE         = 4'd0,
     LOAD_WEIGHT  = 4'd1,  // 현재 K tile의 weight를 array 내부 PE에 load
-    WEIGHT_FLUSH = 4'd2,  // 1-cycle BRAM valid 지연으로 마지막 weight를 전달
+    WEIGHT_FLUSH = 4'd2,  // BRAM read latency 뒤에 나오는 마지막 weight를 전달
     READ_ACT     = 4'd3,  // 현재 m row의 activation vector를 읽기 요청
     WAIT_ACC     = 4'd4,  // array output valid 대기
     READ_PARTIAL = 4'd5,  // C partial sum read valid 대기 및 write-back
@@ -70,6 +70,8 @@ module systolic_array_fsm_ws #(
   } state_t;
 
   localparam int LOAD_CNT_W = $clog2(ROWS) + 1;
+  localparam int WEIGHT_FLUSH_CYCLES = 2;
+  localparam int WEIGHT_FLUSH_CNT_W = $clog2(WEIGHT_FLUSH_CYCLES) + 1;
 
   localparam logic [ADDR_W-1:0] ROWS_W = ADDR_W'(ROWS);
   localparam logic [ADDR_W-1:0] COLS_W = ADDR_W'(COLS);
@@ -90,6 +92,7 @@ module systolic_array_fsm_ws #(
   logic        [    ADDR_W-1:0] k_tile_idx_r;
 
   logic        [LOAD_CNT_W-1:0] weight_load_cnt;
+  logic        [WEIGHT_FLUSH_CNT_W-1:0] weight_flush_cnt;
   logic signed [     ACC_W-1:0] array_acc_r        [COLS];
 
   logic        [    ADDR_W-1:0] n_offset_w;
@@ -181,7 +184,9 @@ module systolic_array_fsm_ws #(
       end
 
       WEIGHT_FLUSH: begin
-        next_state = READ_ACT;
+        if (weight_flush_cnt == WEIGHT_FLUSH_CNT_W'(WEIGHT_FLUSH_CYCLES - 1)) begin
+          next_state = READ_ACT;
+        end
       end
 
       READ_ACT: begin
@@ -228,6 +233,7 @@ module systolic_array_fsm_ws #(
       n_tile_idx_r       <= '0;
       k_tile_idx_r       <= '0;
       weight_load_cnt    <= '0;
+      weight_flush_cnt   <= '0;
       array_acc_r        <= '{default: '0};
       last_tile_r        <= 1'b0;
     end else begin
@@ -237,6 +243,7 @@ module systolic_array_fsm_ws #(
           n_tile_idx_r    <= '0;
           k_tile_idx_r    <= '0;
           weight_load_cnt <= '0;
+          weight_flush_cnt <= '0;
           array_acc_r     <= '{default: '0};
           last_tile_r     <= 1'b0;
 
@@ -255,10 +262,19 @@ module systolic_array_fsm_ws #(
         end
 
         LOAD_WEIGHT: begin
+          weight_flush_cnt <= '0;
           if (weight_load_cnt == LOAD_CNT_W'(ROWS - 1)) begin
             weight_load_cnt <= '0;
           end else begin
             weight_load_cnt <= weight_load_cnt + LOAD_CNT_W'(1);
+          end
+        end
+
+        WEIGHT_FLUSH: begin
+          if (weight_flush_cnt == WEIGHT_FLUSH_CNT_W'(WEIGHT_FLUSH_CYCLES - 1)) begin
+            weight_flush_cnt <= '0;
+          end else begin
+            weight_flush_cnt <= weight_flush_cnt + WEIGHT_FLUSH_CNT_W'(1);
           end
         end
 

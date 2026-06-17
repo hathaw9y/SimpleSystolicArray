@@ -1,7 +1,8 @@
 module tb_simple_dual_port_bram_model #(
-    parameter int DATA_W = 128,
-    parameter int ADDR_W = 9,
-    parameter int DEPTH  = 512
+    parameter int DATA_W       = 128,
+    parameter int ADDR_W       = 9,
+    parameter int DEPTH        = 512,
+    parameter int READ_LATENCY = 2
 ) (
     input  logic              clka,
     input  logic              ena,
@@ -14,12 +15,19 @@ module tb_simple_dual_port_bram_model #(
     output logic [DATA_W-1:0] doutb
 );
 
+  localparam int VALID_LATENCY = (READ_LATENCY < 1) ? 1 : READ_LATENCY;
+
   logic [DATA_W-1:0] mem[DEPTH];
+  logic [DATA_W-1:0] read_pipe[VALID_LATENCY];
 
   initial begin
     for (int i = 0; i < DEPTH; i++) begin
       mem[i] = '0;
     end
+    for (int i = 0; i < VALID_LATENCY; i++) begin
+      read_pipe[i] = '0;
+    end
+    doutb = '0;
   end
 
   always @(posedge clka) begin
@@ -28,9 +36,21 @@ module tb_simple_dual_port_bram_model #(
     end
   end
 
-  always @(posedge clkb) begin
-    if (enb) begin
-      doutb <= mem[addrb];
+  if (VALID_LATENCY == 1) begin : g_latency_1
+    always @(posedge clkb) begin
+      if (enb) begin
+        doutb <= mem[addrb];
+      end
+    end
+  end else begin : g_latency_n
+    always @(posedge clkb) begin
+      if (enb) begin
+        read_pipe[0] <= mem[addrb];
+      end
+      for (int p = 1; p < VALID_LATENCY - 1; p++) begin
+        read_pipe[p] <= read_pipe[p-1];
+      end
+      doutb <= read_pipe[VALID_LATENCY-2];
     end
   end
 
