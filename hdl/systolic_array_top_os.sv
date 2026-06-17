@@ -65,6 +65,8 @@ module systolic_array_top_os #(
     output logic                  m_axis_result_tlast,
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA CLK" *)
+    (* X_INTERFACE_MODE = "master ACT_BRAM_PORTA" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
     output logic                  act_bram_clka,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA RST" *)
     output logic                  act_bram_rsta,
@@ -79,6 +81,8 @@ module systolic_array_top_os #(
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTA DOUT" *)
     input  logic [ROWS*ACT_W-1:0] act_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB CLK" *)
+    (* X_INTERFACE_MODE = "master ACT_BRAM_PORTB" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
     output logic                  act_bram_clkb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACT_BRAM_PORTB RST" *)
     output logic                  act_bram_rstb,
@@ -94,6 +98,8 @@ module systolic_array_top_os #(
     input  logic [ROWS*ACT_W-1:0] act_bram_doutb,
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA CLK" *)
+    (* X_INTERFACE_MODE = "master WEIGHT_BRAM_PORTA" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
     output logic                     weight_bram_clka,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA RST" *)
     output logic                     weight_bram_rsta,
@@ -108,6 +114,8 @@ module systolic_array_top_os #(
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTA DOUT" *)
     input  logic [COLS*WEIGHT_W-1:0] weight_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB CLK" *)
+    (* X_INTERFACE_MODE = "master WEIGHT_BRAM_PORTB" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
     output logic                     weight_bram_clkb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 WEIGHT_BRAM_PORTB RST" *)
     output logic                     weight_bram_rstb,
@@ -123,6 +131,8 @@ module systolic_array_top_os #(
     input  logic [COLS*WEIGHT_W-1:0] weight_bram_doutb,
 
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA CLK" *)
+    (* X_INTERFACE_MODE = "master ACC_BRAM_PORTA" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE WRITE_ONLY" *)
     output logic                  acc_bram_clka,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA RST" *)
     output logic                  acc_bram_rsta,
@@ -137,6 +147,8 @@ module systolic_array_top_os #(
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTA DOUT" *)
     input  logic [ROWS*ACC_W-1:0] acc_bram_douta,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB CLK" *)
+    (* X_INTERFACE_MODE = "master ACC_BRAM_PORTB" *)
+    (* X_INTERFACE_PARAMETER = "MASTER_TYPE BRAM_CTRL, READ_WRITE_MODE READ_ONLY" *)
     output logic                  acc_bram_clkb,
     (* X_INTERFACE_INFO = "xilinx.com:interface:bram:1.0 ACC_BRAM_PORTB RST" *)
     output logic                  acc_bram_rstb,
