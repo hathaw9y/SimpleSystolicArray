@@ -102,39 +102,6 @@ module tb_systolic_array_top_os;
     forever #5 S_AXI_ACLK = ~S_AXI_ACLK;
   end
 
-`ifdef DEBUG_TOP_OS
-  always_ff @(posedge S_AXI_ACLK) begin
-    if (dut.acc_bram_ena && dut.acc_bram_wea[0]) begin
-      $display("ACC_WRITE t=%0t addr=%0d lane0=%0d lane1=%0d data=0x%0h",
-               $time,
-               dut.acc_bram_addra,
-               $signed(dut.acc_bram_dina[0*ACC_W+:ACC_W]),
-               $signed(dut.acc_bram_dina[1*ACC_W+:ACC_W]),
-               dut.acc_bram_dina);
-    end
-
-    if (dut.u_engine.act_loader_valid_w || dut.u_engine.weight_loader_valid_w) begin
-      $display("LOAD t=%0t act_v=%0b act0=%0d act1=%0d weight_v=%0b weight0=%0d weight1=%0d",
-               $time,
-               dut.u_engine.act_loader_valid_w,
-               $signed(dut.u_engine.act_loader_data_w[0]),
-               $signed(dut.u_engine.act_loader_data_w[1]),
-               dut.u_engine.weight_loader_valid_w,
-               $signed(dut.u_engine.weight_loader_data_w[0]),
-               $signed(dut.u_engine.weight_loader_data_w[1]));
-    end
-
-    if (m_axis_result_tvalid && m_axis_result_tready) begin
-      $display("RESULT t=%0t lane0=%0d lane1=%0d data=0x%0h last=%0b",
-               $time,
-               $signed(m_axis_result_tdata[0*ACC_W+:ACC_W]),
-               $signed(m_axis_result_tdata[1*ACC_W+:ACC_W]),
-               m_axis_result_tdata,
-               m_axis_result_tlast);
-    end
-  end
-`endif
-
   function automatic logic [ROWS*ACT_W-1:0] pack_act(input int signed lane0,
                                                      input int signed lane1);
     begin
@@ -378,6 +345,7 @@ module tb_systolic_array_top_os;
     logic [ROWS*ACC_W-1:0] expected[2];
     bit seen;
     begin
+      // C = A x B = [[19, 22], [43, 50]], streamed one output column per beat.
       expected[0] = pack_acc(19, 43);
       expected[1] = pack_acc(22, 50);
       m_axis_result_tready = 1'b1;
