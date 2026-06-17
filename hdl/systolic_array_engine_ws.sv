@@ -33,16 +33,19 @@ module systolic_array_engine_ws #(
 
   logic                       act_loader_en_w;
   logic        [  ADDR_W-1:0] act_loader_addr_w;
+  logic        [   ACT_W-1:0] act_loader_data_raw_w[ROWS];
   logic signed [   ACT_W-1:0] act_loader_data_w[ROWS];
   logic                       act_loader_valid_w;
 
   logic                       weight_loader_en_w;
   logic        [  ADDR_W-1:0] weight_loader_addr_w;
+  logic        [WEIGHT_W-1:0] weight_loader_data_raw_w[COLS];
   logic signed [WEIGHT_W-1:0] weight_loader_data_w[COLS];
   logic                       weight_loader_valid_w;
 
   logic                       acc_loader_en_w;
   logic        [  ADDR_W-1:0] acc_loader_addr_w;
+  logic        [   ACC_W-1:0] acc_loader_data_raw_w[COLS];
   logic signed [   ACC_W-1:0] acc_loader_data_w[COLS];
   logic                       acc_loader_valid_w;
 
@@ -65,6 +68,21 @@ module systolic_array_engine_ws #(
   logic        [  ADDR_W-1:0] storer_addr_w;
   logic signed [   ACC_W-1:0] storer_data_w[COLS];
 
+  genvar lane;
+  generate
+    for (lane = 0; lane < ROWS; lane++) begin : g_cast_act_loader
+      assign act_loader_data_w[lane] = $signed(act_loader_data_raw_w[lane]);
+    end
+
+    for (lane = 0; lane < COLS; lane++) begin : g_cast_weight_loader
+      assign weight_loader_data_w[lane] = $signed(weight_loader_data_raw_w[lane]);
+    end
+
+    for (lane = 0; lane < COLS; lane++) begin : g_cast_acc_loader
+      assign acc_loader_data_w[lane] = $signed(acc_loader_data_raw_w[lane]);
+    end
+  endgenerate
+
   bram_loader #(
       .ROWS  (ROWS),
       .DATA_W(ACT_W),
@@ -78,7 +96,7 @@ module systolic_array_engine_ws #(
       .bram_en_o  (act_bram_en_o),
       .bram_addr_o(act_bram_addr_o),
       .bram_data_i(act_bram_data_i),
-      .data_o     (act_loader_data_w),
+      .data_o     (act_loader_data_raw_w),
       .valid_o    (act_loader_valid_w)
   );
 
@@ -95,7 +113,7 @@ module systolic_array_engine_ws #(
       .bram_en_o  (weight_bram_en_o),
       .bram_addr_o(weight_bram_addr_o),
       .bram_data_i(weight_bram_data_i),
-      .data_o     (weight_loader_data_w),
+      .data_o     (weight_loader_data_raw_w),
       .valid_o    (weight_loader_valid_w)
   );
 
@@ -112,7 +130,7 @@ module systolic_array_engine_ws #(
       .bram_en_o  (acc_rd_bram_en_o),
       .bram_addr_o(acc_rd_bram_addr_o),
       .bram_data_i(acc_rd_bram_data_i),
-      .data_o     (acc_loader_data_w),
+      .data_o     (acc_loader_data_raw_w),
       .valid_o    (acc_loader_valid_w)
   );
 
