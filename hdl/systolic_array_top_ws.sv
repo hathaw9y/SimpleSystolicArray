@@ -93,7 +93,7 @@ module systolic_array_top_ws #(
   logic [    ADDR_W-1:0] acc_bram_addrb;
   logic [ACC_BRAM_W-1:0] acc_bram_doutb;
 
-  W128_D512_BLK_MEM u_act_bram (
+  w128_d512_blk_mem u_act_bram (
       .clka (S_AXI_ACLK),
       .ena  (act_bram_ena),
       .wea  (act_bram_wea),
@@ -105,7 +105,7 @@ module systolic_array_top_ws #(
       .doutb(act_bram_doutb)
   );
 
-  W128_D512_BLK_MEM u_weight_bram (
+  w128_d512_blk_mem u_weight_bram (
       .clka (S_AXI_ACLK),
       .ena  (weight_bram_ena),
       .wea  (weight_bram_wea),
@@ -117,7 +117,7 @@ module systolic_array_top_ws #(
       .doutb(weight_bram_doutb)
   );
 
-  W512_D512_BLK_MEM u_acc_bram (
+  w512_d512_blk_mem u_acc_bram (
       .clka (S_AXI_ACLK),
       .ena  (acc_bram_ena),
       .wea  (acc_bram_wea),

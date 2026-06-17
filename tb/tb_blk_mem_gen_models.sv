@@ -36,7 +36,7 @@ module tb_simple_dual_port_bram_model #(
 
 endmodule
 
-module W128_D512_BLK_MEM (
+module w128_d512_blk_mem (
     input  logic         clka,
     input  logic         ena,
     input  logic [  0:0] wea,
@@ -66,7 +66,7 @@ module W128_D512_BLK_MEM (
 
 endmodule
 
-module W512_D512_BLK_MEM (
+module w512_d512_blk_mem (
     input  logic         clka,
     input  logic         ena,
     input  logic [  0:0] wea,
