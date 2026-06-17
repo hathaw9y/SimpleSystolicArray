@@ -50,29 +50,35 @@ module tb_systolic_array_top_os;
   logic m_axis_result_tready;
   logic m_axis_result_tlast;
 
-  logic act_wr_bram_en_o;
-  logic act_wr_bram_we_o;
-  logic [ADDR_W-1:0] act_wr_bram_addr_o;
-  logic [ROWS*ACT_W-1:0] act_wr_bram_data_o;
-  logic act_rd_bram_en_o;
-  logic [ADDR_W-1:0] act_rd_bram_addr_o;
-  logic [ROWS*ACT_W-1:0] act_rd_bram_data_i;
+  logic act_bram_clka;
+  logic act_bram_ena;
+  logic [0:0] act_bram_wea;
+  logic [ADDR_W-1:0] act_bram_addra;
+  logic [ROWS*ACT_W-1:0] act_bram_dina;
+  logic act_bram_clkb;
+  logic act_bram_enb;
+  logic [ADDR_W-1:0] act_bram_addrb;
+  logic [ROWS*ACT_W-1:0] act_bram_doutb;
 
-  logic weight_wr_bram_en_o;
-  logic weight_wr_bram_we_o;
-  logic [ADDR_W-1:0] weight_wr_bram_addr_o;
-  logic [COLS*WEIGHT_W-1:0] weight_wr_bram_data_o;
-  logic weight_rd_bram_en_o;
-  logic [ADDR_W-1:0] weight_rd_bram_addr_o;
-  logic [COLS*WEIGHT_W-1:0] weight_rd_bram_data_i;
+  logic weight_bram_clka;
+  logic weight_bram_ena;
+  logic [0:0] weight_bram_wea;
+  logic [ADDR_W-1:0] weight_bram_addra;
+  logic [COLS*WEIGHT_W-1:0] weight_bram_dina;
+  logic weight_bram_clkb;
+  logic weight_bram_enb;
+  logic [ADDR_W-1:0] weight_bram_addrb;
+  logic [COLS*WEIGHT_W-1:0] weight_bram_doutb;
 
-  logic acc_wr_bram_en_o;
-  logic acc_wr_bram_we_o;
-  logic [ADDR_W-1:0] acc_wr_bram_addr_o;
-  logic [ROWS*ACC_W-1:0] acc_wr_bram_data_o;
-  logic acc_rd_bram_en_o;
-  logic [ADDR_W-1:0] acc_rd_bram_addr_o;
-  logic [ROWS*ACC_W-1:0] acc_rd_bram_data_i;
+  logic acc_bram_clka;
+  logic acc_bram_ena;
+  logic [0:0] acc_bram_wea;
+  logic [ADDR_W-1:0] acc_bram_addra;
+  logic [ROWS*ACC_W-1:0] acc_bram_dina;
+  logic acc_bram_clkb;
+  logic acc_bram_enb;
+  logic [ADDR_W-1:0] acc_bram_addrb;
+  logic [ROWS*ACC_W-1:0] acc_bram_doutb;
 
   logic [ROWS*ACT_W-1:0] act_mem[256];
   logic [COLS*WEIGHT_W-1:0] weight_mem[256];
@@ -123,27 +129,33 @@ module tb_systolic_array_top_os;
       .m_axis_result_tvalid(m_axis_result_tvalid),
       .m_axis_result_tready(m_axis_result_tready),
       .m_axis_result_tlast(m_axis_result_tlast),
-      .act_wr_bram_en_o(act_wr_bram_en_o),
-      .act_wr_bram_we_o(act_wr_bram_we_o),
-      .act_wr_bram_addr_o(act_wr_bram_addr_o),
-      .act_wr_bram_data_o(act_wr_bram_data_o),
-      .act_rd_bram_en_o(act_rd_bram_en_o),
-      .act_rd_bram_addr_o(act_rd_bram_addr_o),
-      .act_rd_bram_data_i(act_rd_bram_data_i),
-      .weight_wr_bram_en_o(weight_wr_bram_en_o),
-      .weight_wr_bram_we_o(weight_wr_bram_we_o),
-      .weight_wr_bram_addr_o(weight_wr_bram_addr_o),
-      .weight_wr_bram_data_o(weight_wr_bram_data_o),
-      .weight_rd_bram_en_o(weight_rd_bram_en_o),
-      .weight_rd_bram_addr_o(weight_rd_bram_addr_o),
-      .weight_rd_bram_data_i(weight_rd_bram_data_i),
-      .acc_wr_bram_en_o(acc_wr_bram_en_o),
-      .acc_wr_bram_we_o(acc_wr_bram_we_o),
-      .acc_wr_bram_addr_o(acc_wr_bram_addr_o),
-      .acc_wr_bram_data_o(acc_wr_bram_data_o),
-      .acc_rd_bram_en_o(acc_rd_bram_en_o),
-      .acc_rd_bram_addr_o(acc_rd_bram_addr_o),
-      .acc_rd_bram_data_i(acc_rd_bram_data_i)
+      .act_bram_clka(act_bram_clka),
+      .act_bram_ena(act_bram_ena),
+      .act_bram_wea(act_bram_wea),
+      .act_bram_addra(act_bram_addra),
+      .act_bram_dina(act_bram_dina),
+      .act_bram_clkb(act_bram_clkb),
+      .act_bram_enb(act_bram_enb),
+      .act_bram_addrb(act_bram_addrb),
+      .act_bram_doutb(act_bram_doutb),
+      .weight_bram_clka(weight_bram_clka),
+      .weight_bram_ena(weight_bram_ena),
+      .weight_bram_wea(weight_bram_wea),
+      .weight_bram_addra(weight_bram_addra),
+      .weight_bram_dina(weight_bram_dina),
+      .weight_bram_clkb(weight_bram_clkb),
+      .weight_bram_enb(weight_bram_enb),
+      .weight_bram_addrb(weight_bram_addrb),
+      .weight_bram_doutb(weight_bram_doutb),
+      .acc_bram_clka(acc_bram_clka),
+      .acc_bram_ena(acc_bram_ena),
+      .acc_bram_wea(acc_bram_wea),
+      .acc_bram_addra(acc_bram_addra),
+      .acc_bram_dina(acc_bram_dina),
+      .acc_bram_clkb(acc_bram_clkb),
+      .acc_bram_enb(acc_bram_enb),
+      .acc_bram_addrb(acc_bram_addrb),
+      .acc_bram_doutb(acc_bram_doutb)
   );
 
   initial begin
@@ -435,28 +447,28 @@ module tb_systolic_array_top_os;
 
   always_ff @(posedge S_AXI_ACLK) begin
     if (!S_AXI_ARESETN) begin
-      act_rd_bram_data_i <= '0;
-      weight_rd_bram_data_i <= '0;
-      acc_rd_bram_data_i <= '0;
+      act_bram_doutb <= '0;
+      weight_bram_doutb <= '0;
+      acc_bram_doutb <= '0;
     end else begin
-      if (act_wr_bram_en_o && act_wr_bram_we_o) begin
-        act_mem[act_wr_bram_addr_o] <= act_wr_bram_data_o;
+      if (act_bram_ena && act_bram_wea[0]) begin
+        act_mem[act_bram_addra] <= act_bram_dina;
       end
-      if (weight_wr_bram_en_o && weight_wr_bram_we_o) begin
-        weight_mem[weight_wr_bram_addr_o] <= weight_wr_bram_data_o;
+      if (weight_bram_ena && weight_bram_wea[0]) begin
+        weight_mem[weight_bram_addra] <= weight_bram_dina;
       end
-      if (acc_wr_bram_en_o && acc_wr_bram_we_o) begin
-        acc_mem[acc_wr_bram_addr_o] <= acc_wr_bram_data_o;
+      if (acc_bram_ena && acc_bram_wea[0]) begin
+        acc_mem[acc_bram_addra] <= acc_bram_dina;
       end
 
-      if (act_rd_bram_en_o) begin
-        act_rd_bram_data_i <= act_mem[act_rd_bram_addr_o];
+      if (act_bram_enb) begin
+        act_bram_doutb <= act_mem[act_bram_addrb];
       end
-      if (weight_rd_bram_en_o) begin
-        weight_rd_bram_data_i <= weight_mem[weight_rd_bram_addr_o];
+      if (weight_bram_enb) begin
+        weight_bram_doutb <= weight_mem[weight_bram_addrb];
       end
-      if (acc_rd_bram_en_o) begin
-        acc_rd_bram_data_i <= acc_mem[acc_rd_bram_addr_o];
+      if (acc_bram_enb) begin
+        acc_bram_doutb <= acc_mem[acc_bram_addrb];
       end
     end
   end
