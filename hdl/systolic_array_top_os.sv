@@ -328,7 +328,7 @@ module systolic_array_top_os #(
       .DATA_W      (ACC_BRAM_W),
       .ADDR_W      (ADDR_W),
       .LEN_W       (LEN_W),
-      .READ_LATENCY(2)
+      .READ_LATENCY(1)
   ) u_result_reader (
       .aclk_i         (S_AXI_ACLK),
       .aresetn_i      (S_AXI_ARESETN),

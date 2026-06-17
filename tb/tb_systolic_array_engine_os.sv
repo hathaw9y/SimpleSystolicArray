@@ -30,10 +30,6 @@ module tb_systolic_array_engine_os;
   logic [ROWS*ACT_W-1:0]        act_mem[256];
   logic [COLS*WEIGHT_W-1:0]     weight_mem[256];
   logic [ROWS*ACC_W-1:0]        acc_mem[256];
-  logic                         act_bram_en_d;
-  logic        [  ADDR_W-1:0]   act_bram_addr_d;
-  logic                         weight_bram_en_d;
-  logic        [  ADDR_W-1:0]   weight_bram_addr_d;
 
   systolic_array_engine_os #(
       .ROWS(ROWS),
@@ -132,21 +128,12 @@ module tb_systolic_array_engine_os;
     if (!aresetn_i) begin
       act_bram_data_i    <= '0;
       weight_bram_data_i <= '0;
-      act_bram_en_d      <= 1'b0;
-      act_bram_addr_d    <= '0;
-      weight_bram_en_d   <= 1'b0;
-      weight_bram_addr_d <= '0;
     end else begin
-      act_bram_en_d      <= act_bram_en_o;
-      act_bram_addr_d    <= act_bram_addr_o;
-      weight_bram_en_d   <= weight_bram_en_o;
-      weight_bram_addr_d <= weight_bram_addr_o;
-
-      if (act_bram_en_d) begin
-        act_bram_data_i <= act_mem[act_bram_addr_d];
+      if (act_bram_en_o) begin
+        act_bram_data_i <= act_mem[act_bram_addr_o];
       end
-      if (weight_bram_en_d) begin
-        weight_bram_data_i <= weight_mem[weight_bram_addr_d];
+      if (weight_bram_en_o) begin
+        weight_bram_data_i <= weight_mem[weight_bram_addr_o];
       end
       if (acc_bram_en_o && acc_bram_we_o) begin
         acc_mem[acc_bram_addr_o] <= acc_bram_data_o;
