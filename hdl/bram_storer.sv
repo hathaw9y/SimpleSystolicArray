@@ -2,7 +2,7 @@ module bram_storer #(
     parameter int LANES  = 16,
     parameter int DATA_W = 32,   // ACC_W
     parameter int BRAM_W = LANES * DATA_W,
-    parameter int ADDR_W = 10
+    parameter int ADDR_W = 9
 ) (
     input  logic                     aclk_i,
     input  logic                     aresetn_i,

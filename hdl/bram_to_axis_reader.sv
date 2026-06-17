@@ -1,6 +1,6 @@
 module bram_to_axis_reader #(
     parameter int DATA_W = 32,
-    parameter int ADDR_W = 10,
+    parameter int ADDR_W = 9,
     parameter int LEN_W  = 16
 ) (
     input logic aclk_i,

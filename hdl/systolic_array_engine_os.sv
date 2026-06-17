@@ -4,7 +4,7 @@ module systolic_array_engine_os #(
     parameter int ACT_W    = 8,
     parameter int WEIGHT_W = 8,
     parameter int ACC_W    = 32,
-    parameter int ADDR_W   = 10
+    parameter int ADDR_W = 9
 ) (
     input  logic                       aclk_i,
     input  logic                       aresetn_i,

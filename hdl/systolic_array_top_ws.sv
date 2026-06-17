@@ -4,7 +4,7 @@ module systolic_array_top_ws #(
     parameter int                ACT_W            = 8,
     parameter int                WEIGHT_W         = 8,
     parameter int                ACC_W            = 32,
-    parameter int                ADDR_W           = 10,
+    parameter int                ADDR_W           = 9,
     parameter int                LEN_W            = 16,
     parameter logic [ADDR_W-1:0] ACT_BASE_ADDR    = '0,
     parameter logic [ADDR_W-1:0] WEIGHT_BASE_ADDR = '0,

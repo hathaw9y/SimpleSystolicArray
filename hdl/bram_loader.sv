@@ -2,7 +2,7 @@ module bram_loader #(
     parameter int ROWS   = 16,
     parameter int DATA_W = 8,
     parameter int BRAM_W = 128,
-    parameter int ADDR_W = 10
+    parameter int ADDR_W = 9
 ) (
     input  logic              aclk_i,
     input  logic              aresetn_i,
