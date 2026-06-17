@@ -102,6 +102,39 @@ module tb_systolic_array_top_os;
     forever #5 S_AXI_ACLK = ~S_AXI_ACLK;
   end
 
+`ifdef DEBUG_TOP_OS
+  always_ff @(posedge S_AXI_ACLK) begin
+    if (dut.acc_bram_ena && dut.acc_bram_wea[0]) begin
+      $display("ACC_WRITE t=%0t addr=%0d lane0=%0d lane1=%0d data=0x%0h",
+               $time,
+               dut.acc_bram_addra,
+               $signed(dut.acc_bram_dina[0*ACC_W+:ACC_W]),
+               $signed(dut.acc_bram_dina[1*ACC_W+:ACC_W]),
+               dut.acc_bram_dina);
+    end
+
+    if (dut.u_engine.act_loader_valid_w || dut.u_engine.weight_loader_valid_w) begin
+      $display("LOAD t=%0t act_v=%0b act0=%0d act1=%0d weight_v=%0b weight0=%0d weight1=%0d",
+               $time,
+               dut.u_engine.act_loader_valid_w,
+               $signed(dut.u_engine.act_loader_data_w[0]),
+               $signed(dut.u_engine.act_loader_data_w[1]),
+               dut.u_engine.weight_loader_valid_w,
+               $signed(dut.u_engine.weight_loader_data_w[0]),
+               $signed(dut.u_engine.weight_loader_data_w[1]));
+    end
+
+    if (m_axis_result_tvalid && m_axis_result_tready) begin
+      $display("RESULT t=%0t lane0=%0d lane1=%0d data=0x%0h last=%0b",
+               $time,
+               $signed(m_axis_result_tdata[0*ACC_W+:ACC_W]),
+               $signed(m_axis_result_tdata[1*ACC_W+:ACC_W]),
+               m_axis_result_tdata,
+               m_axis_result_tlast);
+    end
+  end
+`endif
+
   function automatic logic [ROWS*ACT_W-1:0] pack_act(input int signed lane0,
                                                      input int signed lane1);
     begin
@@ -342,13 +375,14 @@ module tb_systolic_array_top_os;
   endtask
 
   task automatic collect_result_stream;
-    logic [ROWS*ACC_W-1:0] expected[1];
+    logic [ROWS*ACC_W-1:0] expected[2];
     bit seen;
     begin
-      expected[0] = pack_acc(22, 50);
+      expected[0] = pack_acc(19, 43);
+      expected[1] = pack_acc(22, 50);
       m_axis_result_tready = 1'b1;
 
-      for (int beat = 0; beat < 1; beat++) begin
+      for (int beat = 0; beat < 2; beat++) begin
         seen = 1'b0;
         for (int cycle = 0; cycle < 4096; cycle++) begin
           tick();
@@ -364,14 +398,14 @@ module tb_systolic_array_top_os;
         end
 
         check_acc_word("result stream", m_axis_result_tdata, expected[beat]);
-        if (m_axis_result_tlast !== (beat == 0)) begin
+        if (m_axis_result_tlast !== (beat == 1)) begin
           $error("result tlast at beat %0d: got %0b", beat, m_axis_result_tlast);
           $finish;
         end
 
         tick();
 
-        if (beat == 0) begin
+        if (beat == 1) begin
           if (m_axis_result_tvalid) begin
             $error("unexpected result beat after tlast");
             $finish;

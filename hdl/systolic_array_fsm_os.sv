@@ -54,8 +54,8 @@ module systolic_array_fsm_os #(
     DONE    = 3'd5   // 전체 GEMM 완료 pulse
   } state_t;
 
-  // 마지막 입력 이후 결과가 우하단까지 전파되는 데 필요한 대기 cycle.
-  localparam int DRAIN_LAST = ROWS + COLS - 2;
+  // 마지막 입력 이후 결과가 우하단까지 전파되고, PE acc_o에 반영되는 데 필요한 대기 cycle.
+  localparam int DRAIN_LAST = ROWS + COLS - 1;
   localparam int DRAIN_CNT_W = $clog2(ROWS + COLS) + 1;
   localparam int STORE_CNT_W = $clog2(COLS) + 1;
   localparam int STORE_IDX_W = (COLS <= 1) ? 1 : $clog2(COLS);
@@ -82,6 +82,8 @@ module systolic_array_fsm_os #(
   logic [DRAIN_CNT_W-1:0] drain_cnt;
   logic [STORE_CNT_W-1:0] store_cnt;
   logic [STORE_IDX_W-1:0] store_col_idx;
+  logic                   read_gap_r;
+  logic                   compute_issue_w;
 
   logic [     ADDR_W-1:0] m_offset_w;
   logic [     ADDR_W-1:0] n_offset_w;
@@ -101,6 +103,7 @@ module systolic_array_fsm_os #(
   assign tile_n_w = min_const(n_size_r - n_offset_w, COLS_W);
   assign tile_m_last_w = (tile_m_w == '0) ? '0 : tile_m_w - ADDR_W'(1);
   assign tile_n_last_w = (tile_n_w == '0) ? '0 : tile_n_w - ADDR_W'(1);
+  assign compute_issue_w = (state == COMPUTE) && !read_gap_r;
 
   function automatic logic [ADDR_W-1:0] ceil_div_const(input logic [ADDR_W-1:0] value,
                                                        input logic [ADDR_W-1:0] denom);
@@ -138,7 +141,7 @@ module systolic_array_fsm_os #(
       end
 
       COMPUTE: begin
-        if (k_cnt == k_last_r) next_state = DRAIN;
+        if (compute_issue_w && (k_cnt == k_last_r)) next_state = DRAIN;
       end
 
       DRAIN: begin
@@ -178,6 +181,7 @@ module systolic_array_fsm_os #(
       k_last_r           <= '0;
       drain_cnt          <= '0;
       store_cnt          <= '0;
+      read_gap_r         <= 1'b0;
       last_tile_r        <= 1'b0;
     end else begin
       case (state)
@@ -188,6 +192,7 @@ module systolic_array_fsm_os #(
           k_cnt        <= '0;
           drain_cnt    <= '0;
           store_cnt    <= '0;
+          read_gap_r   <= 1'b0;
           last_tile_r  <= 1'b0;
 
           if (start_i) begin
@@ -206,10 +211,16 @@ module systolic_array_fsm_os #(
         end
 
         COMPUTE: begin
-          k_cnt <= (k_cnt == k_last_r) ? '0 : k_cnt + ADDR_W'(1);
+          if (compute_issue_w) begin
+            k_cnt      <= (k_cnt == k_last_r) ? '0 : k_cnt + ADDR_W'(1);
+            read_gap_r <= 1'b1;
+          end else begin
+            read_gap_r <= 1'b0;
+          end
         end
 
         DRAIN: begin
+          read_gap_r <= 1'b0;
           drain_cnt <= (drain_cnt == DRAIN_LAST_W) ? '0 : drain_cnt + DRAIN_CNT_W'(1);
         end
 
@@ -268,9 +279,9 @@ module systolic_array_fsm_os #(
 
         COMPUTE: begin
           // 각 주소는 현재 tile base + K offset.
-          act_loader_en_o      <= 1'b1;
+          act_loader_en_o      <= compute_issue_w;
           act_loader_addr_o    <= act_base_addr_r + (m_tile_idx_r * k_size_r) + k_cnt;
-          weight_loader_en_o   <= 1'b1;
+          weight_loader_en_o   <= compute_issue_w;
           weight_loader_addr_o <= weight_base_addr_r + (n_tile_idx_r * k_size_r) + k_cnt;
         end
 
